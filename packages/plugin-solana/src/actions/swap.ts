@@ -15,6 +15,9 @@ import BigNumber from "bignumber.js";
 import { getWalletKey } from "../keypairUtils.ts";
 import { walletProvider, WalletProvider } from "../providers/wallet.ts";
 import { getTokenDecimals } from "./swapUtils.ts";
+import { SolanaAgentKit, ACTIONS } from "solana-agent-kit";
+
+const TRADE_ACTION = ACTIONS.TRADE_ACTION;
 
 async function swapToken(
     connection: Connection,
@@ -167,14 +170,14 @@ async function getTokenFromWallet(runtime: IAgentRuntime, tokenSymbol: string) {
 // swapToken should took CA, not symbol
 
 export const executeSwap: Action = {
-    name: "EXECUTE_SWAP",
-    similes: ["SWAP_TOKENS", "TOKEN_SWAP", "TRADE_TOKENS", "EXCHANGE_TOKENS"],
+    name: TRADE_ACTION.name,
+    similes: TRADE_ACTION.similes,
     validate: async (runtime: IAgentRuntime, message: Memory) => {
         // Check if the necessary parameters are provided in the message
         console.log("Message:", message);
         return true;
     },
-    description: "Perform a token swap.",
+    description: TRADE_ACTION.description,
     handler: async (
         runtime: IAgentRuntime,
         message: Memory,

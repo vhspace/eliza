@@ -24,6 +24,9 @@ import {
 import { composeContext } from "@elizaos/core";
 import { getWalletKey } from "../keypairUtils";
 import { generateObjectDeprecated } from "@elizaos/core";
+import { ACTIONS } from "solana-agent-kit";
+
+const TRANSFER_ACTION = ACTIONS.TRANSFER_ACTION;
 
 export interface TransferContent extends Content {
     tokenAddress: string;
@@ -65,14 +68,8 @@ Given the recent messages, extract the following information about the requested
 Respond with a JSON markdown block containing only the extracted values.`;
 
 export default {
-    name: "SEND_TOKEN",
-    similes: [
-        "TRANSFER_TOKEN",
-        "TRANSFER_TOKENS",
-        "SEND_TOKENS",
-        "SEND_SOL",
-        "PAY",
-    ],
+    name: TRANSFER_ACTION.name,
+    similes: TRANSFER_ACTION.similes,
     validate: async (runtime: IAgentRuntime, message: Memory) => {
         console.log("Validating transfer from user:", message.userId);
         //add custom validate logic here
@@ -94,7 +91,7 @@ export default {
             */
         return false;
     },
-    description: "Transfer tokens from the agent's wallet to another address",
+    description: TRANSFER_ACTION.description,
     handler: async (
         runtime: IAgentRuntime,
         message: Memory,
