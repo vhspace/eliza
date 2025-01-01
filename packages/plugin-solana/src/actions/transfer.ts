@@ -1,14 +1,9 @@
-import {
-    getAssociatedTokenAddressSync,
-    createTransferInstruction,
-} from "@solana/spl-token";
-import { elizaLogger, settings } from "@elizaos/core";
+
+import { elizaLogger,  } from "@elizaos/core";
 
 import {
-    Connection,
     PublicKey,
-    TransactionMessage,
-    VersionedTransaction,
+
 } from "@solana/web3.js";
 
 import {
@@ -22,9 +17,9 @@ import {
     type Action,
 } from "@elizaos/core";
 import { composeContext } from "@elizaos/core";
-import { getWalletKey } from "../keypairUtils";
 import { generateObjectDeprecated } from "@elizaos/core";
 import { ACTIONS } from "solana-agent-kit";
+import { getSAK } from "../utils";
 
 const TRANSFER_ACTION = ACTIONS.TRANSFER_ACTION;
 
@@ -100,6 +95,7 @@ export default {
         callback?: HandlerCallback
     ): Promise<boolean> => {
         elizaLogger.log("Starting SEND_TOKEN handler...");
+        const sak = await getSAK(runtime);
 
         // Initialize or update state
         if (!state) {
@@ -134,87 +130,21 @@ export default {
         }
 
         try {
-            const { keypair: senderKeypair } = await getWalletKey(
-                runtime,
-                true
-            );
-
-            const connection = new Connection(settings.RPC_URL!);
 
             const mintPubkey = new PublicKey(content.tokenAddress);
             const recipientPubkey = new PublicKey(content.recipient);
 
-            // Get decimals (simplest way)
-            const mintInfo = await connection.getParsedAccountInfo(mintPubkey);
-            const decimals =
-                (mintInfo.value?.data as any)?.parsed?.info?.decimals ?? 9;
 
-            // Adjust amount with decimals
-            const adjustedAmount = BigInt(
-                Number(content.amount) * Math.pow(10, decimals)
-            );
-            console.log(
-                `Transferring: ${content.amount} tokens (${adjustedAmount} base units)`
-            );
+            const txId = await sak.transfer(recipientPubkey, Number(content.amount), mintPubkey)
 
-            // Rest of the existing working code...
-            const senderATA = getAssociatedTokenAddressSync(
-                mintPubkey,
-                senderKeypair.publicKey
-            );
-            const recipientATA = getAssociatedTokenAddressSync(
-                mintPubkey,
-                recipientPubkey
-            );
-
-            const instructions = [];
-
-            const recipientATAInfo =
-                await connection.getAccountInfo(recipientATA);
-            if (!recipientATAInfo) {
-                const { createAssociatedTokenAccountInstruction } =
-                    await import("@solana/spl-token");
-                instructions.push(
-                    createAssociatedTokenAccountInstruction(
-                        senderKeypair.publicKey,
-                        recipientATA,
-                        recipientPubkey,
-                        mintPubkey
-                    )
-                );
-            }
-
-            instructions.push(
-                createTransferInstruction(
-                    senderATA,
-                    recipientATA,
-                    senderKeypair.publicKey,
-                    adjustedAmount
-                )
-            );
-
-            // Create and sign versioned transaction
-            const messageV0 = new TransactionMessage({
-                payerKey: senderKeypair.publicKey,
-                recentBlockhash: (await connection.getLatestBlockhash())
-                    .blockhash,
-                instructions,
-            }).compileToV0Message();
-
-            const transaction = new VersionedTransaction(messageV0);
-            transaction.sign([senderKeypair]);
-
-            // Send transaction
-            const signature = await connection.sendTransaction(transaction);
-
-            console.log("Transfer successful:", signature);
+            console.log("Transfer successful:", txId);
 
             if (callback) {
                 callback({
-                    text: `Successfully transferred ${content.amount} tokens to ${content.recipient}\nTransaction: ${signature}`,
+                    text: `Successfully transferred ${content.amount} tokens to ${content.recipient}\nTransaction: ${txId}`,
                     content: {
                         success: true,
-                        signature,
+                        signature : txId,
                         amount: content.amount,
                         recipient: content.recipient,
                     },
