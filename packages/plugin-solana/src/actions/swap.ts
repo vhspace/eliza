@@ -9,6 +9,7 @@ import {
     settings,
     State,
     type Action,
+    elizaLogger,
 } from "@elizaos/core";
 import { Connection, PublicKey } from "@solana/web3.js";
 import { getWalletKey } from "../keypairUtils.ts";
@@ -82,7 +83,7 @@ async function getTokenFromWallet(runtime: IAgentRuntime, tokenSymbol: string) {
             return null;
         }
     } catch (error) {
-        console.error("Error checking token in wallet:", error);
+        elizaLogger.error("Error checking token in wallet:", error);
         return null;
     }
 }
@@ -94,7 +95,7 @@ export const executeSwap: Action = {
     similes: TRADE_ACTION.similes,
     validate: async (runtime: IAgentRuntime, message: Memory) => {
         // Check if the necessary parameters are provided in the message
-        console.log("Message:", message);
+        elizaLogger.log("Message:", message);
         return true;
     },
     description: TRADE_ACTION.description,
@@ -128,7 +129,7 @@ export const executeSwap: Action = {
             modelClass: ModelClass.LARGE,
         });
 
-        console.log("Response:", response);
+        elizaLogger.log("Response:", response);
         // const type = response.inputTokenSymbol?.toUpperCase() === "SOL" ? "buy" : "sell";
 
         // Add SOL handling logic
@@ -142,7 +143,7 @@ export const executeSwap: Action = {
         // if both contract addresses are set, lets execute the swap
         // TODO: try to resolve CA from symbol based on existing symbol in wallet
         if (!response.inputTokenCA && response.inputTokenSymbol) {
-            console.log(
+            elizaLogger.log(
                 `Attempting to resolve CA for input token symbol: ${response.inputTokenSymbol}`
             );
             response.inputTokenCA = await getTokenFromWallet(
@@ -150,9 +151,13 @@ export const executeSwap: Action = {
                 response.inputTokenSymbol
             );
             if (response.inputTokenCA) {
-                console.log(`Resolved inputTokenCA: ${response.inputTokenCA}`);
+                elizaLogger.log(
+                    `Resolved inputTokenCA: ${response.inputTokenCA}`
+                );
             } else {
-                console.log("No contract addresses provided, skipping swap");
+                elizaLogger.log(
+                    "No contract addresses provided, skipping swap"
+                );
                 const responseMsg = {
                     text: "I need the contract addresses to perform the swap",
                 };
@@ -162,7 +167,7 @@ export const executeSwap: Action = {
         }
 
         if (!response.outputTokenCA && response.outputTokenSymbol) {
-            console.log(
+            elizaLogger.log(
                 `Attempting to resolve CA for output token symbol: ${response.outputTokenSymbol}`
             );
             response.outputTokenCA = await getTokenFromWallet(
@@ -170,11 +175,13 @@ export const executeSwap: Action = {
                 response.outputTokenSymbol
             );
             if (response.outputTokenCA) {
-                console.log(
+                elizaLogger.log(
                     `Resolved outputTokenCA: ${response.outputTokenCA}`
                 );
             } else {
-                console.log("No contract addresses provided, skipping swap");
+                elizaLogger.log(
+                    "No contract addresses provided, skipping swap"
+                );
                 const responseMsg = {
                     text: "I need the contract addresses to perform the swap",
                 };
@@ -184,7 +191,7 @@ export const executeSwap: Action = {
         }
 
         if (!response.amount) {
-            console.log("No amount provided, skipping swap");
+            elizaLogger.log("No amount provided, skipping swap");
             const responseMsg = {
                 text: "I need the amount to perform the swap",
             };
@@ -194,7 +201,7 @@ export const executeSwap: Action = {
 
         // TODO: if response amount is half, all, etc, semantically retrieve amount and return as number
         if (!response.amount) {
-            console.log("Amount is not a number, skipping swap");
+            elizaLogger.log("Amount is not a number, skipping swap");
             const responseMsg = {
                 text: "The amount must be a number",
             };
@@ -242,8 +249,8 @@ export const executeSwap: Action = {
                 );
             }
 
-            console.log("Swap completed successfully!");
-            console.log(`Transaction ID: ${txid}`);
+            elizaLogger.log("Swap completed successfully!");
+            elizaLogger.log(`Transaction ID: ${txid}`);
 
             const responseMsg = {
                 text: `Swap completed successfully! Transaction ID: ${txid}`,
@@ -253,7 +260,7 @@ export const executeSwap: Action = {
 
             return true;
         } catch (error) {
-            console.error("Error during token swap:", error);
+            elizaLogger.error("Error during token swap:", error);
             return false;
         }
     },

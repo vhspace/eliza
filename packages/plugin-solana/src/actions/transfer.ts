@@ -33,7 +33,7 @@ function isTransferContent(
     runtime: IAgentRuntime,
     content: any
 ): content is TransferContent {
-    console.log("Content for transfer", content);
+    elizaLogger.log("Content for transfer", content);
     return (
         typeof content.tokenAddress === "string" &&
         typeof content.recipient === "string" &&
@@ -66,21 +66,21 @@ export default {
     name: TRANSFER_ACTION.name,
     similes: TRANSFER_ACTION.similes,
     validate: async (runtime: IAgentRuntime, message: Memory) => {
-        console.log("Validating transfer from user:", message.userId);
+        elizaLogger.log("Validating transfer from user:", message.userId);
         //add custom validate logic here
         /*
             const adminIds = runtime.getSetting("ADMIN_USER_IDS")?.split(",") || [];
-            //console.log("Admin IDs from settings:", adminIds);
+            //elizaLogger.log("Admin IDs from settings:", adminIds);
 
             const isAdmin = adminIds.includes(message.userId);
 
             if (isAdmin) {
-                //console.log(`Authorized transfer from user: ${message.userId}`);
+                //elizaLogger.log(`Authorized transfer from user: ${message.userId}`);
                 return true;
             }
             else
             {
-                //console.log(`Unauthorized transfer attempt from user: ${message.userId}`);
+                //elizaLogger.log(`Unauthorized transfer attempt from user: ${message.userId}`);
                 return false;
             }
             */
@@ -119,7 +119,7 @@ export default {
 
         // Validate transfer content
         if (!isTransferContent(runtime, content)) {
-            console.error("Invalid content for TRANSFER_TOKEN action.");
+            elizaLogger.error("Invalid content for TRANSFER_TOKEN action.");
             if (callback) {
                 callback({
                     text: "Unable to process transfer request. Invalid content provided.",
@@ -153,7 +153,7 @@ export default {
 
             return true;
         } catch (error) {
-            console.error("Error during token transfer:", error);
+            elizaLogger.error("Error during token transfer:", error);
             if (callback) {
                 callback({
                     text: `Error transferring tokens: ${error.message}`,
