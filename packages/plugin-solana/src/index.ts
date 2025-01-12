@@ -8,6 +8,10 @@ import { executeSwap } from "./actions/swap.ts";
 import take_order from "./actions/takeOrder";
 import pumpfun from "./actions/pumpfun.ts";
 import fomo from "./actions/fomo.ts";
+import lend from "./actions/lend.ts";
+import getTokenInfo from "./actions/getTokenInfo.ts";
+import stake from "./actions/stake.ts";
+import gibwork from "./actions/gibwork.ts";
 import { executeSwapForDAO } from "./actions/swapDao";
 import transferToken from "./actions/transfer.ts";
 import { walletProvider } from "./providers/wallet.ts";
@@ -29,6 +33,10 @@ export const solanaPlugin: Plugin = {
         transferToken,
         executeSwapForDAO,
         take_order,
+        lend,
+        stake,
+        gibwork,
+        getTokenInfo,
     ],
     evaluators: [trustEvaluator],
     providers: [walletProvider, trustScoreProvider],
