@@ -2,6 +2,7 @@ import { PGLiteDatabaseAdapter } from "@elizaos/adapter-pglite";
 import { PostgresDatabaseAdapter } from "@elizaos/adapter-postgres";
 import { RedisClient } from "@elizaos/adapter-redis";
 import { SqliteDatabaseAdapter } from "@elizaos/adapter-sqlite";
+import { SupabaseDatabaseAdapter } from "@elizaos/adapter-supabase";
 import { AutoClientInterface } from "@elizaos/client-auto";
 import { DiscordClientInterface } from "@elizaos/client-discord";
 import { FarcasterAgentClient } from "@elizaos/client-farcaster";
@@ -10,7 +11,6 @@ import { SlackClientInterface } from "@elizaos/client-slack";
 import { TelegramClientInterface } from "@elizaos/client-telegram";
 import { TwitterClientInterface } from "@elizaos/client-twitter";
 // import { ReclaimAdapter } from "@elizaos/plugin-reclaim";
-import { DirectClient } from "@elizaos/client-direct";
 import { PrimusAdapter } from "@elizaos/plugin-primus";
 
 import {
@@ -101,7 +101,8 @@ import net from "net";
 import path from "path";
 import { fileURLToPath } from "url";
 import yargs from "yargs";
-import {dominosPlugin} from "@elizaos/plugin-dominos";
+import { verifiableLogPlugin } from "@elizaos/plugin-tee-verifiable-log";
+import createNFTCollectionsPlugin from "@elizaos/plugin-nft-collections";
 
 const __filename = fileURLToPath(import.meta.url); // get the resolved path to the file
 const __dirname = path.dirname(__filename); // get the name of the directory
@@ -147,6 +148,80 @@ function tryLoadFile(filePath: string): string | null {
     } catch (e) {
         return null;
     }
+}
+function mergeCharacters(base: Character, child: Character): Character {
+    const mergeObjects = (baseObj: any, childObj: any) => {
+        const result: any = {};
+        const keys = new Set([
+            ...Object.keys(baseObj || {}),
+            ...Object.keys(childObj || {}),
+        ]);
+        keys.forEach((key) => {
+            if (
+                typeof baseObj[key] === "object" &&
+                typeof childObj[key] === "object" &&
+                !Array.isArray(baseObj[key]) &&
+                !Array.isArray(childObj[key])
+            ) {
+                result[key] = mergeObjects(baseObj[key], childObj[key]);
+            } else if (
+                Array.isArray(baseObj[key]) ||
+                Array.isArray(childObj[key])
+            ) {
+                result[key] = [
+                    ...(baseObj[key] || []),
+                    ...(childObj[key] || []),
+                ];
+            } else {
+                result[key] =
+                    childObj[key] !== undefined ? childObj[key] : baseObj[key];
+            }
+        });
+        return result;
+    };
+    return mergeObjects(base, child);
+}
+async function loadCharacter(filePath: string): Promise<Character> {
+    const content = tryLoadFile(filePath);
+    if (!content) {
+        throw new Error(`Character file not found: ${filePath}`);
+    }
+    let character = JSON.parse(content);
+    validateCharacterConfig(character);
+
+    // .id isn't really valid
+    const characterId = character.id || character.name;
+    const characterPrefix = `CHARACTER.${characterId.toUpperCase().replace(/ /g, "_")}.`;
+    const characterSettings = Object.entries(process.env)
+        .filter(([key]) => key.startsWith(characterPrefix))
+        .reduce((settings, [key, value]) => {
+            const settingKey = key.slice(characterPrefix.length);
+            return { ...settings, [settingKey]: value };
+        }, {});
+    if (Object.keys(characterSettings).length > 0) {
+        character.settings = character.settings || {};
+        character.settings.secrets = {
+            ...characterSettings,
+            ...character.settings.secrets,
+        };
+    }
+    // Handle plugins
+    character.plugins = await handlePluginImporting(character.plugins);
+    if (character.extends) {
+        elizaLogger.info(
+            `Merging  ${character.name} character with parent characters`
+        );
+        for (const extendPath of character.extends) {
+            const baseCharacter = await loadCharacter(
+                path.resolve(path.dirname(filePath), extendPath)
+            );
+            character = mergeCharacters(baseCharacter, character);
+            elizaLogger.info(
+                `Merged ${character.name} with ${baseCharacter.name}`
+            );
+        }
+    }
+    return character;
 }
 
 export async function loadCharacters(
@@ -211,32 +286,7 @@ export async function loadCharacters(
             }
 
             try {
-                const character = JSON.parse(content);
-                validateCharacterConfig(character);
-
-                // .id isn't really valid
-                const characterId = character.id || character.name;
-                const characterPrefix = `CHARACTER.${characterId.toUpperCase().replace(/ /g, "_")}.`;
-
-                const characterSettings = Object.entries(process.env)
-                    .filter(([key]) => key.startsWith(characterPrefix))
-                    .reduce((settings, [key, value]) => {
-                        const settingKey = key.slice(characterPrefix.length);
-                        return { ...settings, [settingKey]: value };
-                    }, {});
-
-                if (Object.keys(characterSettings).length > 0) {
-                    character.settings = character.settings || {};
-                    character.settings.secrets = {
-                        ...characterSettings,
-                        ...character.settings.secrets,
-                    };
-                }
-
-                // Handle plugins
-                character.plugins = await handlePluginImporting(
-                    character.plugins
-                );
+                const character: Character = await loadCharacter(resolvedPath);
 
                 loadedCharacters.push(character);
                 elizaLogger.info(
@@ -418,6 +468,11 @@ export function getTokenForProvider(
                 character.settings?.secrets?.INFERA_API_KEY ||
                 settings.INFERA_API_KEY
             );
+        case ModelProviderName.DEEPSEEK:
+            return (
+                character.settings?.secrets?.DEEPSEEK_API_KEY ||
+                settings.DEEPSEEK_API_KEY
+            );
         default:
             const errorMessage = `Failed to get token - unsupported model provider: ${provider}`;
             elizaLogger.error(errorMessage);
@@ -426,7 +481,26 @@ export function getTokenForProvider(
 }
 
 function initializeDatabase(dataDir: string) {
-    if (process.env.POSTGRES_URL) {
+    if (process.env.SUPABASE_URL && process.env.SUPABASE_ANON_KEY) {
+        elizaLogger.info("Initializing Supabase connection...");
+        const db = new SupabaseDatabaseAdapter(
+            process.env.SUPABASE_URL,
+            process.env.SUPABASE_ANON_KEY
+        );
+
+        // Test the connection
+        db.init()
+            .then(() => {
+                elizaLogger.success(
+                    "Successfully connected to Supabase database"
+                );
+            })
+            .catch((error) => {
+                elizaLogger.error("Failed to connect to Supabase:", error);
+            });
+
+        return db;
+    } else if (process.env.POSTGRES_URL) {
         elizaLogger.info("Initializing PostgreSQL connection...");
         const db = new PostgresDatabaseAdapter({
             connectionString: process.env.POSTGRES_URL,
@@ -455,8 +529,20 @@ function initializeDatabase(dataDir: string) {
     } else {
         const filePath =
             process.env.SQLITE_FILE ?? path.resolve(dataDir, "db.sqlite");
-        // ":memory:";
+        elizaLogger.info(`Initializing SQLite database at ${filePath}...`);
         const db = new SqliteDatabaseAdapter(new Database(filePath));
+
+        // Test the connection
+        db.init()
+            .then(() => {
+                elizaLogger.success(
+                    "Successfully connected to SQLite database"
+                );
+            })
+            .catch((error) => {
+                elizaLogger.error("Failed to connect to SQLite:", error);
+            });
+
         return db;
     }
 }
@@ -629,7 +715,8 @@ export async function createAgent(
     if (
         process.env.PRIMUS_APP_ID &&
         process.env.PRIMUS_APP_SECRET &&
-        process.env.VERIFIABLE_INFERENCE_ENABLED === "true"){
+        process.env.VERIFIABLE_INFERENCE_ENABLED === "true"
+    ) {
         verifiableInferenceAdapter = new PrimusAdapter({
             appId: process.env.PRIMUS_APP_ID,
             appSecret: process.env.PRIMUS_APP_SECRET,
@@ -712,6 +799,9 @@ export async function createAgent(
                   ]
                 : []),
             ...(teeMode !== TEEMode.OFF && walletSecretSalt ? [teePlugin] : []),
+            (teeMode !== TEEMode.OFF && walletSecretSalt &&getSecret(character,"VLOG")
+                ? verifiableLogPlugin
+                : null),
             getSecret(character, "SGX") ? sgxPlugin : null,
             getSecret(character, "ENABLE_TEE_LOG") &&
             ((teeMode !== TEEMode.OFF && walletSecretSalt) ||
@@ -798,8 +888,9 @@ export async function createAgent(
                         : null,
                 ? akashPlugin
                 : null,
-            getSecret(character, "QUAI_PRIVATE_KEY")
-                ? quaiPlugin
+            getSecret(character, "QUAI_PRIVATE_KEY") ? quaiPlugin : null,
+            getSecret(character, "RESERVOIR_API_KEY")
+                ? createNFTCollectionsPlugin()
                 : null,
         ].filter(Boolean),
         providers: [],

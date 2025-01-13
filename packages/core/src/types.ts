@@ -261,6 +261,7 @@ export enum ModelProviderName {
     NINETEEN_AI = "nineteen_ai",
     AKASH_CHAT_API = "akash_chat_api",
     LIVEPEER = "livepeer",
+    LETZAI = "letzai",
     DEEPSEEK="deepseek",
     INFERA="infera"
 }
@@ -647,6 +648,7 @@ export enum Clients {
     LENS = "lens",
     AUTO = "auto",
     SLACK = "slack",
+    GITHUB = "github",
 }
 
 export interface IAgentConfig {
@@ -871,6 +873,8 @@ export type Character = {
     nft?: {
         prompt: string;
     };
+    /**Optinal Parent characters to inherit information from */
+    extends?: string[];
 };
 
 /**
@@ -1424,6 +1428,7 @@ export enum ServiceType {
     AWS_S3 = "aws_s3",
     BUTTPLUG = "buttplug",
     SLACK = "slack",
+    VERIFIABLE_LOGGING = "verifiable_logging",
     IRYS = "irys",
     TEE_LOG = "tee_log",
     GOPLUS_SECURITY = "goplus_security",
