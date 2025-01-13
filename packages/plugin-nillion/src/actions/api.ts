@@ -1,4 +1,4 @@
-import { NilDbNode } from "./load-settings.ts";
+import { NilDbNode } from "./environment";
 import { elizaLogger, type UUID } from "@elizaos/core";
 
 const Endpoints = {

@@ -14,7 +14,7 @@ import { nilql } from "@nillion/nilql";
 import { composeContext } from "@elizaos/core";
 import { uploadTemplate } from "../templates/upload";
 import { v4 as uuid4 } from "uuid";
-import { loadConfig } from "./load-settings";
+import { loadConfig } from "./environment";
 import { NilDbApi } from "./api";
 import { validateNilDbConfig } from "./common";
 import { z } from "zod";

@@ -14,7 +14,7 @@ import {
 } from "@elizaos/core";
 import { nilql } from "@nillion/nilql";
 import { retrieveTemplate } from "../templates/retrieve";
-import { loadConfig } from "./load-settings.ts";
+import { loadConfig } from "./environment";
 import { validateNilDbConfig } from "./common.ts";
 import { NilDbApi } from "./api.ts";
 import { z } from "zod";
