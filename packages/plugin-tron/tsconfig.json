@@ -4,8 +4,7 @@
         "outDir": "dist",
         "rootDir": "./src",
         "typeRoots": ["./node_modules/@types", "./src/types"],
-        "declaration": true,
-        "resolveJsonModule": true
+        "declaration": true
     },
     "include": ["src"]
 }

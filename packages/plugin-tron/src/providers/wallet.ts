@@ -14,8 +14,8 @@ import { BigNumber, TronWeb } from "tronweb";
 import * as viemChains from "viem/chains";
 import { Chain, tron } from "viem/chains";
 
-import trc10Abi from "../abis/trc10.json";
-import wtrxAbi from "../abis/wtrx.json";
+import trc10Abi from "../abis/trc10";
+import wtrxAbi from "../abis/wtrx";
 import type { SupportedChain } from "../types";
 import {
     SWAP_FEE_LIMIT as FEE_LIMIT,

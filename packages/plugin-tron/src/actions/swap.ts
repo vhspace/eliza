@@ -8,9 +8,9 @@ import {
     type State,
 } from "@elizaos/core";
 import { BigNumber } from "tronweb";
-import factoryAbi from "../abis/sunswap_v2_factory.json";
-import pairAbi from "../abis/sunswap_v2_pair.json";
-import routerAbi from "../abis/sunswap_v2_router.json";
+import factoryAbi from "../abis/sunswap_v2_factory";
+import pairAbi from "../abis/sunswap_v2_pair";
+import routerAbi from "../abis/sunswap_v2_router";
 
 import {
     SUNSWAPV2_FACTORY,
