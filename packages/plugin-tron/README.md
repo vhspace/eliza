@@ -1,4 +1,4 @@
-# @eliza-plugin-tron
+# @elizaos/plugin-tron
 
 Core Tron blockchain plugin for Eliza OS that provides essential services and actions for token operations, trading, and DeFi integrations.
 
@@ -18,7 +18,7 @@ The TRON plugin provides comprehensive functionality for interacting with TRON b
 ## Installation
 
 ```bash
-yarn install eliza-plugin-tron
+pnpm install @elizaos/plugin-tron
 ```
 
 ## Configuration
@@ -121,19 +121,19 @@ const result = await runtime.processActions(message, [message], state);
 2. Install dependencies:
 
 ```bash
-yarn install
+pnpm install
 ```
 
 3. Build the plugin:
 
 ```bash
-yarn run build
+pnpm build
 ```
 
 4. Run tests:
 
 ```bash
-yarn test
+pnpm test
 ```
 
 ## API Reference
