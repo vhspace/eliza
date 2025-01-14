@@ -214,6 +214,9 @@ importers:
       '@elizaos/plugin-echochambers':
         specifier: workspace:*
         version: link:../packages/plugin-echochambers
+      '@elizaos/plugin-eigenda':
+        specifier: workspace:*
+        version: link:../packages/plugin-eigenda
       '@elizaos/plugin-evm':
         specifier: workspace:*
         version: link:../packages/plugin-evm
@@ -1650,6 +1653,22 @@ importers:
       '@elizaos/plugin-node':
         specifier: workspace:*
         version: link:../plugin-node
+
+  packages/plugin-eigenda:
+    dependencies:
+      '@elizaos/core':
+        specifier: workspace:*
+        version: link:../core
+      '@elizaos/plugin-trustdb':
+        specifier: workspace:*
+        version: link:../plugin-trustdb
+    devDependencies:
+      '@types/node':
+        specifier: ^20.0.0
+        version: 20.17.9
+      tsup:
+        specifier: 8.3.5
+        version: 8.3.5(@swc/core@1.10.7(@swc/helpers@0.5.15))(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(typescript@5.7.3)(yaml@2.7.0)
 
   packages/plugin-evm:
     dependencies:
@@ -39605,7 +39624,7 @@ snapshots:
 
   extract-zip@2.0.1:
     dependencies:
-      debug: 4.3.4
+      debug: 4.4.0(supports-color@5.5.0)
       get-stream: 5.2.0
       yauzl: 2.10.0
     optionalDependencies:

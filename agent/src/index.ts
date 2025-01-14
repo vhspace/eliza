@@ -96,6 +96,7 @@ import { openWeatherPlugin } from "@elizaos/plugin-open-weather";
 import { stargazePlugin } from "@elizaos/plugin-stargaze";
 import { akashPlugin } from "@elizaos/plugin-akash";
 import { quaiPlugin } from "@elizaos/plugin-quai";
+import { eigendaPlugin } from "@elizaos/plugin-eigenda";
 import Database from "better-sqlite3";
 import fs from "fs";
 import net from "net";
@@ -853,6 +854,10 @@ export async function createAgent(
                 : null,
             getSecret(character, "QUAI_PRIVATE_KEY")
                 ? quaiPlugin
+                : null,
+            getSecret(character, "EIGENDA_PRIVATE_KEY") &&
+            getSecret(character, "BASE_RPC_URL")
+                ? eigendaPlugin
                 : null,
         ].filter(Boolean),
         providers: [],
