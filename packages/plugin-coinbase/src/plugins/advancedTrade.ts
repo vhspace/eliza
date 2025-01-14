@@ -105,6 +105,40 @@ const tradeProvider: Provider = {
     },
 };
 
+async function calculatePnl(client: RESTClient, amount: number): Promise<number> {
+    const accounts = JSON.parse(await client.listAccounts({})).accounts;
+    elizaLogger.info("Accounts:", accounts);
+
+    const btcAccount = accounts.find(account => account.currency === "BTC");
+    elizaLogger.info("BTC Account:", btcAccount);
+    const btcBalance = parseFloat(btcAccount?.available_balance?.value);
+    elizaLogger.info("BTC Balance:", btcBalance);
+
+    const ethAccount = accounts.find(account => account.currency === "ETH");
+    elizaLogger.info("ETH Account:", ethAccount);
+    const ethBalance = parseFloat(ethAccount?.available_balance?.value);
+    elizaLogger.info("ETH Balance:", ethBalance);
+
+    const usdAccount = accounts.find(account => account.currency === "USD");
+    elizaLogger.info("USD Account:", usdAccount);
+    const usdBalance = parseFloat(usdAccount?.available_balance?.value);
+    elizaLogger.info("USD Balance:", usdBalance);
+
+    const btcPrice = await getPrice(client, "BTC-USD");
+    elizaLogger.info("BTC Price:", btcPrice);
+    const ethPrice = await getPrice(client, "ETH-USD");
+    elizaLogger.info("ETH Price:", ethPrice);
+
+    const btcUSD = btcBalance * btcPrice;
+    elizaLogger.info("BTC USD:", btcUSD);
+    const ethUSD = ethBalance * ethPrice;
+    const totalValueUSD = btcUSD + ethUSD + usdBalance;
+    elizaLogger.info("Total Value USD:", totalValueUSD);
+
+    const pnl = totalValueUSD - amount;
+    return pnl;
+}
+
 export const pnlProvider: Provider = {
     get: async (runtime: IAgentRuntime, _message: Memory) => {
         const client = new RESTClient(
@@ -115,36 +149,14 @@ export const pnlProvider: Provider = {
         elizaLogger.info("Portfolios:", portfolios);
         const portfolioId = portfolios.portfolios[0].uuid;
         elizaLogger.info("Portfolio ID:", portfolioId);
-        return { realizedPnl: 0, unrealizedPnl: 0 };
         if (!portfolioId) {
             elizaLogger.error("Portfolio ID is not set");
             return { realizedPnl: 0, unrealizedPnl: 0 };
         }
-
-        let btcPosition: Position, ethPosition: Position;
-        try {
-            btcPosition = JSON.parse(await client.getPortfolioBalances({portfolioUuid: portfolioId, symbol: "BTC-USD"})).position;
-            ethPosition = JSON.parse(await client.getPortfolioBalances({portfolioUuid: portfolioId, symbol: "ETH-USD"})).position;
-            elizaLogger.info("BTC Position:", btcPosition);
-            elizaLogger.info("ETH Position:", ethPosition);
-        } catch (error) {
-            elizaLogger.error("Error fetching portfolio balances:", error.message);
-            return { realizedPnl: 0, unrealizedPnl: 0 };
-        }
-
-        const btcUnrealizedPnl = btcPosition?.unrealized_pnl || 0;
-        const ethUnrealizedPnl = ethPosition?.unrealized_pnl || 0;
-        const ethAggregatedPnl = ethPosition?.aggregated_pnl || 0;
-        const btcAggregatedPnl = btcPosition?.aggregated_pnl || 0;
-        elizaLogger.info("BTC Unrealized PNL:", JSON.stringify(btcUnrealizedPnl));
-        elizaLogger.info("ETH Unrealized PNL:", JSON.stringify(ethUnrealizedPnl));
-        elizaLogger.info("ETH Aggregated PNL:", JSON.stringify(ethAggregatedPnl));
-        return {
-            btcUnrealizedPnl: JSON.stringify(btcUnrealizedPnl),
-            ethUnrealizedPnl: JSON.stringify(ethUnrealizedPnl),
-            ethAggregatedPnl: JSON.stringify(ethAggregatedPnl),
-            btcAggregatedPnl: JSON.stringify(btcAggregatedPnl)
-        }
+        // Need to manually set the amount and calculate as endpoints not accessible for portfolios
+        const pnl = await calculatePnl(client, 1000);
+        elizaLogger.info("Pnl:", pnl);
+        return pnl
     }
 }
 

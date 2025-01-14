@@ -95,7 +95,7 @@ export class CoinbaseClient implements Client {
         });
     }
 
-    private async generateTweetContent(event: WebhookEvent, amountInCurrency: number, formattedTimestamp: string, state: State): Promise<string> {
+    private async generateTweetContent(event: WebhookEvent, amountInCurrency: number, pnlText: string, formattedTimestamp: string, state: State): Promise<string> {
         try {
             const tradeTweetTemplate = `
 # Task
@@ -105,6 +105,7 @@ Trade details:
 - ${event.event.toUpperCase()} order for ${event.ticker}
 - Trading amount: $${amountInCurrency.toFixed(2)}
 - Current price: $${Number(event.price).toFixed(2)}
+- Overall Unrealized PNL: $${pnlText}
 - Time: ${formattedTimestamp}
 
 Requirements:
@@ -117,12 +118,12 @@ Requirements:
 7. Include the key information: action, amount, ticker, and price
 
 Example variations for buys:
-"📈 Just added $1,000 of BTC to the portfolio at $50,000.00"
-"🎯 Strategic BTC purchase: $1,000 at $50,000.00"
+"📈 Just added $1,000 of BTC to the portfolio at $50,000.00. Overall Unrealized PNL: $${pnlText}"
+"🎯 Strategic BTC purchase: $1,000 at $50,000.00. Overall Unrealized PNL: $${pnlText}"
 
 Example variations for sells:
-"💫 Executed BTC position: Sold $1,000 at $52,000.00"
-"📊 Strategic exit: Released $1,000 of BTC at $52,000.00"
+"💫 Executed BTC position: Sold $1,000 at $52,000.00. Overall Unrealized PNL: $${pnlText}"
+"📊 Strategic exit: Released $1,000 of BTC at $52,000.00. Overall Unrealized PNL: $${pnlText}"
 
 Generate only the tweet text, no commentary or markdown.`;
             const context = composeContext({
@@ -133,7 +134,7 @@ Generate only the tweet text, no commentary or markdown.`;
             const tweetContent = await generateText({
                 runtime: this.runtime,
                 context,
-                modelClass: ModelClass.SMALL,
+                modelClass: ModelClass.LARGE,
             });
 
             const trimmedContent = tweetContent.trim();
@@ -189,10 +190,10 @@ Generate only the tweet text, no commentary or markdown.`;
 
         const pnl = await pnlProvider.get(this.runtime, memory);
 
-        const pnlText = pnl ? `Realized PNL: ${JSON.stringify(pnl.realizedPnl)}, Unrealized PNL: ${JSON.stringify(pnl.unrealizedPnl)}` : "";
+        const pnlText = `Unrealized PNL: $${pnl.toFixed(2)}`;
 
         try {
-            const tweetContent = await this.generateTweetContent(event, amount, formattedTimestamp, state);
+            const tweetContent = await this.generateTweetContent(event, amount, pnlText, formattedTimestamp, state);
             elizaLogger.info("Generated tweet content:", tweetContent);
             const response = await postTweet(tweetContent);
             elizaLogger.info("Tweet response:", response);
