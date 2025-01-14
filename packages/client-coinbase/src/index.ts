@@ -8,12 +8,13 @@ import {
     stringToUuid,
     composeContext,
     generateText,
-    ModelClass
+    ModelClass,
+    State
 } from "@elizaos/core";
 import { postTweet } from "@elizaos/plugin-twitter";
 import express from "express";
 import { WebhookEvent } from "./types";
-// import { pnlProvider } from "@elizaos/plugin-coinbase";
+import { pnlProvider } from "@elizaos/plugin-coinbase";
 
 export class CoinbaseClient implements Client {
     private runtime: IAgentRuntime;
@@ -94,18 +95,15 @@ export class CoinbaseClient implements Client {
         });
     }
 
-    private async generateTweetContent(event: WebhookEvent, _tradeAmount: number, formattedTimestamp: string): Promise<string> {
+    private async generateTweetContent(event: WebhookEvent, amountInCurrency: number, formattedTimestamp: string, state: State): Promise<string> {
         try {
-            const roomId = stringToUuid("coinbase-trading");
-            const amount = Number(this.runtime.getSetting('COINBASE_TRADING_AMOUNT')) ?? 1;
-
             const tradeTweetTemplate = `
 # Task
 Create an engaging and unique tweet announcing a Coinbase trade. Be creative but professional.
 
 Trade details:
 - ${event.event.toUpperCase()} order for ${event.ticker}
-- Trading amount: $${amount.toFixed(2)}
+- Trading amount: $${amountInCurrency.toFixed(2)}
 - Current price: $${Number(event.price).toFixed(2)}
 - Time: ${formattedTimestamp}
 
@@ -127,28 +125,9 @@ Example variations for sells:
 "📊 Strategic exit: Released $1,000 of BTC at $52,000.00"
 
 Generate only the tweet text, no commentary or markdown.`;
-
             const context = composeContext({
                 template: tradeTweetTemplate,
-                state: {
-                    event: event.event.toUpperCase(),
-                    ticker: event.ticker,
-                    amount: `${amount.toFixed(2)}`,
-                    price: `${Number(event.price).toFixed(2)}`,
-                    timestamp: formattedTimestamp,
-                    bio: '',
-                    lore: '',
-                    messageDirections: '',
-                    postDirections: '',
-                    persona: '',
-                    personality: '',
-                    role: '',
-                    scenario: '',
-                    roomId,
-                    actors: '',
-                    recentMessages: '',
-                    recentMessagesData: []
-                }
+                state
             });
 
             const tweetContent = await generateText({
@@ -180,7 +159,7 @@ Generate only the tweet text, no commentary or markdown.`;
             agentId: this.runtime.agentId,
             roomId,
             content: {
-                text: `Place an advanced market order to ${event.event.toLowerCase()} $${amount} worth of ${event.ticker}`,
+                text: `Place an advanced trade market order to ${event.event.toLowerCase()} $${amount} worth of ${event.ticker}`,
                 action: "EXECUTE_ADVANCED_TRADE",
                 source: "coinbase",
                 metadata: {
@@ -195,7 +174,7 @@ Generate only the tweet text, no commentary or markdown.`;
         };
 
         await this.runtime.messageManager.createMemory(memory);
-
+        const state = await this.runtime.composeState(memory);
         const callback: HandlerCallback = async (content: Content) => {
             if (!content.text.includes("Trade executed successfully")) {
                 return [];
@@ -208,20 +187,12 @@ Generate only the tweet text, no commentary or markdown.`;
             timeZoneName: 'short'
         }).format(new Date(event.timestamp));
 
-//         const pnl = await pnlProvider.get(this.runtime, memory);
+        const pnl = await pnlProvider.get(this.runtime, memory);
 
-
-//         const pnlText = pnl ? `Realized PNL: ${JSON.stringify(pnl.realizedPnl)}, Unrealized PNL: ${JSON.stringify(pnl.unrealizedPnl)}` : "";
-
-//         const tweetContent = `🚀 ${event.event.toUpperCase()} for ${event.ticker}!
-// Amount: $${amount}.
-// Price: $${event.price}.
-// Time: ${formattedTimestamp} 🌀
-// ${pnlText}
-// `;
+        const pnlText = pnl ? `Realized PNL: ${JSON.stringify(pnl.realizedPnl)}, Unrealized PNL: ${JSON.stringify(pnl.unrealizedPnl)}` : "";
 
         try {
-            const tweetContent = await this.generateTweetContent(event, amount, formattedTimestamp);
+            const tweetContent = await this.generateTweetContent(event, amount, formattedTimestamp, state);
             elizaLogger.info("Generated tweet content:", tweetContent);
             const response = await postTweet(tweetContent);
             elizaLogger.info("Tweet response:", response);
@@ -231,9 +202,7 @@ Generate only the tweet text, no commentary or markdown.`;
             return [];
         };
 
-        const state = await this.runtime.composeState(memory);
         await this.runtime.processActions(memory, [memory], state, callback);
-
     }
 
     async stop(): Promise<void> {

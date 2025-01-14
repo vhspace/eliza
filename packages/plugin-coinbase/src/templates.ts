@@ -109,7 +109,8 @@ Here are the recent user messages for context:
 `;
 
 export const advancedTradeTemplate = `
-Extract the following details for processing an advanced trade using the Coinbase Advanced Trading API:
+Extract the following details for processing an advanced trade using the Coinbase Advanced Trading API for
+{{message}}
 - **productId** (string): The trading pair ID (e.g., "BTC-USD", "ETH-USD", "SOL-USD")
 - **side** (string): The side of the trade (must be either "BUY" or "SELL")
 - **amount** (number): The amount to trade
@@ -134,9 +135,6 @@ Provide the details in the following JSON format:
     "limitPrice": <limit_price>
 }
 \`\`\`
-
-Here are the recent user messages for context:
-{{recentMessages}}
 `;
 
 
