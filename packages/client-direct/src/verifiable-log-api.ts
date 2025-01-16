@@ -2,7 +2,7 @@ import express from "express";
 import bodyParser from "body-parser";
 import cors from "cors";
 
-import { AgentRuntime, elizaLogger, ServiceType }  from "@elizaos/core";
+import { AgentRuntime, elizaLogger, ServiceType } from "@elizaos/core";
 import {
     VerifiableLogService,
     VerifiableLogQuery,
@@ -21,12 +21,14 @@ export function createVerifiableLogApiRouter(
         async (req: express.Request, res: express.Response) => {
             try {
                 // call the listAgent method
-                const agentRuntime: AgentRuntime | undefined = agents.values().next().value;
-                const pageQuery = await agentRuntime
-                    .getService<VerifiableLogService>(
-                        ServiceType.VERIFIABLE_LOGGING
-                    )
-                    .listAgent();
+                const agentRuntime: AgentRuntime | undefined = agents
+                    .values()
+                    .next().value;
+
+                const pageQuery = await agentRuntime.callServiceMethod(
+                    "verifiable_logging",
+                    "listAgent"
+                );
 
                 res.json({
                     success: true,
@@ -53,12 +55,15 @@ export function createVerifiableLogApiRouter(
                     agentId: query.agentId || "",
                     publicKey: query.publicKey || "",
                 };
-                const agentRuntime: AgentRuntime | undefined = agents.values().next().value;
-                const pageQuery = await agentRuntime
-                    .getService<VerifiableLogService>(
-                        ServiceType.VERIFIABLE_LOGGING
-                    )
-                    .generateAttestation(verifiableLogQuery);
+                const agentRuntime: AgentRuntime | undefined = agents
+                    .values()
+                    .next().value;
+
+                const pageQuery = await agentRuntime.callServiceMethod(
+                    "verifiable_logging",
+                    "generateAttestation",
+                    verifiableLogQuery
+                );
 
                 res.json({
                     success: true,
@@ -92,12 +97,17 @@ export function createVerifiableLogApiRouter(
                     contLike: query.contLike || "",
                     signatureEq: query.signatureEq || "",
                 };
-                const agentRuntime: AgentRuntime | undefined = agents.values().next().value;
-                const pageQuery = await agentRuntime
-                    .getService<VerifiableLogService>(
-                        ServiceType.VERIFIABLE_LOGGING
-                    )
-                    .pageQueryLogs(verifiableLogQuery, page, pageSize);
+                const agentRuntime: AgentRuntime | undefined = agents
+                    .values()
+                    .next().value;
+
+                const pageQuery = await agentRuntime.callServiceMethod(
+                    "verifiable_logging",
+                    "pageQueryLogs",
+                    verifiableLogQuery,
+                    page,
+                    pageSize
+                );
 
                 res.json({
                     success: true,

@@ -154,7 +154,10 @@ export class AgentRuntime implements IAgentRuntime {
     ragKnowledgeManager: IRAGKnowledgeManager;
 
     services: Map<ServiceType | string, Service> = new Map();
-    serviceMethods: Map<string, Record<string, (args: any) => any>> = new Map();
+    private serviceMethods: Map<
+        string,
+        { [methodName: string]: (...args: unknown[]) => any }
+    > = new Map();
     memoryManagers: Map<string, IMemoryManager> = new Map();
     cacheManager: ICacheManager;
     clients: Record<string, any>;
@@ -225,7 +228,7 @@ export class AgentRuntime implements IAgentRuntime {
     async callServiceMethod(
         serviceName: string,
         methodName: string,
-        args: any
+        ...args: unknown[]
     ): Promise<any> {
         const methods = this.serviceMethods.get(serviceName);
         if (!methods) {
@@ -238,7 +241,7 @@ export class AgentRuntime implements IAgentRuntime {
             );
         }
 
-        const result = method(args);
+        const result = method(...args);
         return Promise.resolve(result);
     }
 

@@ -1274,7 +1274,7 @@ export interface IAgentRuntime {
     callServiceMethod(
         serviceName: string,
         methodName: string,
-        args: any
+        ...args: unknown[]
     ): Promise<any>;
 }
 
@@ -1365,7 +1365,6 @@ export enum ServiceType {
     AWS_S3 = "aws_s3",
     BUTTPLUG = "buttplug",
     SLACK = "slack",
-    VERIFIABLE_LOGGING = "verifiable_logging",
     GOPLUS_SECURITY = "goplus_security",
 }
 
