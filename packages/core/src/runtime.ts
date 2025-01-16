@@ -205,6 +205,13 @@ export class AgentRuntime implements IAgentRuntime {
         this.services.set(serviceType, service);
 
         if (typeof (service as any).getMethods === "function") {
+            if (this.serviceMethods.has(serviceType)) {
+                elizaLogger.error(
+                    `Methods for service '${serviceType}' already registered.`
+                );
+                return;
+            }
+
             const methods = (service as any).getMethods();
             this.serviceMethods.set(serviceType, methods);
             console.log(
