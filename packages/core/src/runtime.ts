@@ -25,6 +25,7 @@ import { parseJsonArrayFromText } from "./parsing.ts";
 import { formatPosts } from "./posts.ts";
 import { getProviders } from "./providers.ts";
 import { RAGKnowledgeManager } from "./ragknowledge.ts";
+
 import settings from "./settings.ts";
 import {
     Character,
@@ -153,7 +154,7 @@ export class AgentRuntime implements IAgentRuntime {
 
     ragKnowledgeManager: IRAGKnowledgeManager;
 
-    services: Map<ServiceType, Service> = new Map();
+    services: Map<ServiceType | string, Service> = new Map();
     serviceMethods: Map<string, Record<string, (args: any) => any>> = new Map();
     memoryManagers: Map<string, IMemoryManager> = new Map();
     cacheManager: ICacheManager;
@@ -180,7 +181,7 @@ export class AgentRuntime implements IAgentRuntime {
         return this.memoryManagers.get(tableName) || null;
     }
 
-    getService<T extends Service>(service: ServiceType): T | null {
+    getService<T extends Service>(service: ServiceType | string): T | null {
         const serviceInstance = this.services.get(service);
         if (!serviceInstance) {
             elizaLogger.error(`Service ${service} not found`);

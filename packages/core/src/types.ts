@@ -1160,7 +1160,7 @@ export interface ICacheManager {
 export abstract class Service {
     private static instance: Service | null = null;
 
-    static get serviceType(): ServiceType {
+    static get serviceType(): ServiceType | string {
         throw new Error("Service must implement static serviceType getter");
     }
 
@@ -1171,7 +1171,7 @@ export abstract class Service {
         return Service.instance as T;
     }
 
-    get serviceType(): ServiceType {
+    get serviceType(): ServiceType | string {
         return (this.constructor as typeof Service).serviceType;
     }
 
@@ -1205,7 +1205,7 @@ export interface IAgentRuntime {
 
     cacheManager: ICacheManager;
 
-    services: Map<ServiceType, Service>;
+    services: Map<ServiceType | string, Service>;
     // any could be EventEmitter
     // but I think the real solution is forthcoming as a base client interface
     clients: Record<string, any>;
@@ -1218,7 +1218,7 @@ export interface IAgentRuntime {
 
     getMemoryManager(name: string): IMemoryManager | null;
 
-    getService<T extends Service>(service: ServiceType): T | null;
+    getService<T extends Service>(service: ServiceType | string): T | null;
 
     registerService(service: Service): void;
 
@@ -1270,6 +1270,12 @@ export interface IAgentRuntime {
     ): Promise<State>;
 
     updateRecentMessageState(state: State): Promise<State>;
+
+    callServiceMethod(
+        serviceName: string,
+        methodName: string,
+        args: any
+    ): Promise<any>;
 }
 
 export interface IImageDescriptionService extends Service {
