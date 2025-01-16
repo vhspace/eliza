@@ -1,4 +1,4 @@
-# @eliza-plugin-tron
+# @elizaos/plugin-tron
 
 Core Tron blockchain plugin for Eliza OS that provides essential services and actions for token operations, trading, and DeFi integrations.
 
