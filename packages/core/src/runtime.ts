@@ -154,6 +154,7 @@ export class AgentRuntime implements IAgentRuntime {
     ragKnowledgeManager: IRAGKnowledgeManager;
 
     services: Map<ServiceType, Service> = new Map();
+    serviceMethods: Map<string, Record<string, (args: any) => any>> = new Map();
     memoryManagers: Map<string, IMemoryManager> = new Map();
     cacheManager: ICacheManager;
     clients: Record<string, any>;
@@ -201,7 +202,38 @@ export class AgentRuntime implements IAgentRuntime {
 
         // Add the service to the services map
         this.services.set(serviceType, service);
+
+        if (typeof (service as any).getMethods === "function") {
+            const methods = (service as any).getMethods();
+            this.serviceMethods.set(serviceType, methods);
+            console.log(
+                `Registered methods for '${serviceType}':`,
+                Object.keys(methods)
+            );
+        }
+
         elizaLogger.success(`Service ${serviceType} registered successfully`);
+    }
+
+    async callServiceMethod(
+        serviceName: string,
+        methodName: string,
+        args: any
+    ): Promise<any> {
+        const methods = this.serviceMethods.get(serviceName);
+        if (!methods) {
+            throw new Error(`No methods found for service '${serviceName}'.`);
+        }
+        const method = methods[methodName];
+        if (!method) {
+            throw new Error(
+                `Method '${methodName}' not found on service '${serviceName}'.`
+            );
+        }
+
+        // The method expects one object parameter, so we just call it directly:
+        const result = method(args);
+        return Promise.resolve(result);
     }
 
     /**
