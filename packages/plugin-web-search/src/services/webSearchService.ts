@@ -1,4 +1,4 @@
-import { Service, IAgentRuntime, ServiceType } from "@elizaos/core";
+import { Service, IAgentRuntime } from "@elizaos/core";
 import { tavily } from "@tavily/core";
 import { IWebSearchService, SearchOptions, SearchResponse } from "../types";
 
