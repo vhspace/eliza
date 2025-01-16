@@ -1362,7 +1362,6 @@ export enum ServiceType {
     SPEECH_GENERATION = "speech_generation",
     PDF = "pdf",
     AWS_S3 = "aws_s3",
-    BUTTPLUG = "buttplug",
     SLACK = "slack",
 }
 
