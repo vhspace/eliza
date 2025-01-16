@@ -903,7 +903,7 @@ export async function createAgent(
             getSecret(character, "RESERVOIR_API_KEY")
                 ? createNFTCollectionsPlugin()
                 : null,
-            getSecret(character, "TRON_PRIVATE_KEY") ? tronPlugin() : null,
+            getSecret(character, "TRON_PRIVATE_KEY") ? tronPlugin : null,
         ].filter(Boolean),
         providers: [],
         actions: [],
@@ -1118,14 +1118,17 @@ startAgents().catch((error) => {
 });
 
 // Prevent unhandled exceptions from crashing the process if desired
-if (process.env.PREVENT_UNHANDLED_EXIT && parseBooleanFromText(process.env.PREVENT_UNHANDLED_EXIT)) {
+if (
+    process.env.PREVENT_UNHANDLED_EXIT &&
+    parseBooleanFromText(process.env.PREVENT_UNHANDLED_EXIT)
+) {
     // Handle uncaught exceptions to prevent the process from crashing
-    process.on('uncaughtException', function(err) {
+    process.on("uncaughtException", function (err) {
         console.error("uncaughtException", err);
     });
 
     // Handle unhandled rejections to prevent the process from crashing
-    process.on('unhandledRejection', function(err) {
+    process.on("unhandledRejection", function (err) {
         console.error("unhandledRejection", err);
     });
 }
