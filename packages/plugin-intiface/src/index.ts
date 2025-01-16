@@ -8,7 +8,7 @@ import type {
     Plugin,
     State,
 } from "@elizaos/core";
-import { Service, ServiceType } from "@elizaos/core";
+import { Service } from "@elizaos/core";
 import {
     isPortAvailable,
     startIntifaceEngine,
@@ -23,8 +23,10 @@ export interface IIntifaceService extends Service {
     getDevices(): any[];
 }
 
+const INTIFACE = "intiface";
+
 export class IntifaceService extends Service implements IIntifaceService {
-    static serviceType: ServiceType = ServiceType.INTIFACE;
+    static serviceType: string = INTIFACE;
     private client: ButtplugClient;
     private connected = false;
     private devices: Map<string, any> = new Map();
@@ -346,9 +348,7 @@ const vibrateAction: Action = {
         options: any,
         callback: HandlerCallback
     ) => {
-        const service = runtime.getService<IIntifaceService>(
-            ServiceType.INTIFACE
-        );
+        const service = runtime.getService<IIntifaceService>(INTIFACE);
         if (!service) {
             throw new Error("Intiface service not available");
         }
@@ -456,9 +456,7 @@ const rotateAction: Action = {
         options: any,
         callback: HandlerCallback
     ) => {
-        const service = runtime.getService<IIntifaceService>(
-            ServiceType.INTIFACE
-        );
+        const service = runtime.getService<IIntifaceService>(INTIFACE);
         if (!service || !service.rotate) {
             throw new Error("Rotation not supported");
         }
@@ -514,9 +512,7 @@ const batteryAction: Action = {
         options: any,
         callback: HandlerCallback
     ) => {
-        const service = runtime.getService<IIntifaceService>(
-            ServiceType.INTIFACE
-        );
+        const service = runtime.getService<IIntifaceService>(INTIFACE);
         if (!service || !service.getBatteryLevel) {
             throw new Error("Battery level check not supported");
         }
