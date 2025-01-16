@@ -51,9 +51,11 @@ export default function Page({ agentId }: { agentId: UUID }) {
                 messagesContainerRef.current.scrollHeight;
         }
     };
+    const newMessages = useQueryClient().getQueryData(["messages", agentId]);
+
     useEffect(() => {
         scrollToBottom();
-    }, [queryClient.getQueryData(["messages", agentId])]);
+    }, [newMessages]);
 
     useEffect(() => {
         scrollToBottom();
@@ -66,7 +68,6 @@ export default function Page({ agentId }: { agentId: UUID }) {
             handleSendMessage(e as unknown as React.FormEvent<HTMLFormElement>);
         }
     };
-
 
     const handleSendMessage = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();

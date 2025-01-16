@@ -28,7 +28,9 @@ export default function useVersion() {
             const data = await response.json();
             const latestVersion = data.tag_name;
             return latestVersion;
-        } catch {}
+        } catch (e) {
+            console.log("Couldnt get latest version", e);
+        }
     }
 
     const compareVersion = async () => {
@@ -60,7 +62,7 @@ export default function useVersion() {
                 }
             }
         } catch (e) {
-            console.error("Unable to retrieve latest version from GitHub");
+            console.error("Unable to retrieve latest version from GitHub", e);
         }
     };
 

@@ -43,9 +43,7 @@ export const AudioRecorder = ({
     const { toast } = useToast();
     // States
     const [isRecording, setIsRecording] = useState<boolean>(false);
-    // @ts-expect-error - isRecordingFinished is unused, but would break the 2D array if removed
-    const [isRecordingFinished, setIsRecordingFinished] =
-        useState<boolean>(false);
+
     const [timer, setTimer] = useState<number>(0);
     const [currentRecord, setCurrentRecord] = useState<Record>({
         id: -1,
@@ -162,7 +160,7 @@ export const AudioRecorder = ({
         recorder.stop();
 
         setIsRecording(false);
-        setIsRecordingFinished(true);
+
         setTimer(0);
         clearTimeout(timerTimeout);
     }
@@ -188,7 +186,7 @@ export const AudioRecorder = ({
             audioContext.close();
         }
         setIsRecording(false);
-        setIsRecordingFinished(true);
+
         setTimer(0);
         clearTimeout(timerTimeout);
     }
