@@ -2,13 +2,9 @@ import express from "express";
 import bodyParser from "body-parser";
 import cors from "cors";
 
-import { AgentRuntime, elizaLogger, ServiceType } from "@elizaos/core";
-import {
-    VerifiableLogService,
-    VerifiableLogQuery,
-} from "@elizaos/plugin-tee-verifiable-log";
+import { AgentRuntime, elizaLogger } from "@elizaos/core";
 
-const VERIFIABLE_LOGGING_TYPE = "verifiable_logging";
+const VERIFIABLE_LOGGING_SERVICE_TYPE = "verifiable_logging";
 
 export function createVerifiableLogApiRouter(
     agents: Map<string, AgentRuntime>
@@ -28,7 +24,7 @@ export function createVerifiableLogApiRouter(
                     .next().value;
 
                 const pageQuery = await agentRuntime.callServiceMethod(
-                    VERIFIABLE_LOGGING_TYPE,
+                    VERIFIABLE_LOGGING_SERVICE_TYPE,
                     "listAgent"
                 );
 
@@ -62,7 +58,7 @@ export function createVerifiableLogApiRouter(
                     .next().value;
 
                 const pageQuery = await agentRuntime.callServiceMethod(
-                    VERIFIABLE_LOGGING_TYPE,
+                    VERIFIABLE_LOGGING_SERVICE_TYPE,
                     "generateAttestation",
                     verifiableLogQuery
                 );
@@ -90,7 +86,7 @@ export function createVerifiableLogApiRouter(
                 const page = parseInt(req.body.page) || 1;
                 const pageSize = parseInt(req.body.pageSize) || 10;
 
-                const verifiableLogQuery: VerifiableLogQuery = {
+                const verifiableLogQuery = {
                     idEq: query.idEq || "",
                     agentIdEq: query.agentIdEq || "",
                     roomIdEq: query.roomIdEq || "",
@@ -104,7 +100,7 @@ export function createVerifiableLogApiRouter(
                     .next().value;
 
                 const pageQuery = await agentRuntime.callServiceMethod(
-                    VERIFIABLE_LOGGING_TYPE,
+                    VERIFIABLE_LOGGING_SERVICE_TYPE,
                     "pageQueryLogs",
                     verifiableLogQuery,
                     page,
