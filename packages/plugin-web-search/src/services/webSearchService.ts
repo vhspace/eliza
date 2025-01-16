@@ -4,6 +4,8 @@ import { IWebSearchService, SearchOptions, SearchResponse } from "../types";
 
 export type TavilyClient = ReturnType<typeof tavily>; // declaring manually because orginal package does not export its types
 
+const WEB_SEARCH_SERVICE_TYPE = "web_search";
+
 export class WebSearchService extends Service implements IWebSearchService {
     public tavilyClient: TavilyClient;
 
@@ -26,7 +28,7 @@ export class WebSearchService extends Service implements IWebSearchService {
     }
 
     static get serviceType(): string {
-        return "web_search";
+        return WEB_SEARCH_SERVICE_TYPE;
     }
 
     async search(

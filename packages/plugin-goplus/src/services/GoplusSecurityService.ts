@@ -13,6 +13,8 @@ export interface IGoplusSecurityService extends Service {
     check(text: string): Promise<string>;
 }
 
+const GOPLUS_SECURITY_SERVICE_TYPE = "goplus_security";
+
 export class GoplusSecurityService
     extends Service
     implements IGoplusSecurityService
@@ -23,7 +25,7 @@ export class GoplusSecurityService
         return this;
     }
     static get serviceType() {
-        return "goplus_security";
+        return GOPLUS_SECURITY_SERVICE_TYPE;
     }
 
     initialize(runtime: IAgentRuntime): Promise<void> {

@@ -12,13 +12,15 @@ import {
 export { PageQuery, VerifiableAgent, VerifiableLog, VerifiableLogQuery };
 export { DeriveProvider } from "./providers/dreriveProvider.ts";
 
+const TEE_VERIFIABLE_SERVICE_TYPE = "verifiable_logging";
+
 export class VerifiableLogService extends Service {
     getInstance(): VerifiableLogService {
         return this;
     }
 
     static get serviceType(): string {
-        return "verifiable_logging";
+        return TEE_VERIFIABLE_SERVICE_TYPE;
     }
 
     private verifiableLogProvider: VerifiableLogProvider;

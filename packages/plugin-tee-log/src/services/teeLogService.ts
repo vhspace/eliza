@@ -23,6 +23,8 @@ interface ITeeLogService extends Service {
     ): Promise<boolean>;
 }
 
+const TEE_LOG_SERVICE_TYPE = "tee_log";
+
 export class TeeLogService extends Service implements ITeeLogService {
     private readonly dbPath = "./data/tee_log.sqlite";
 
@@ -45,7 +47,7 @@ export class TeeLogService extends Service implements ITeeLogService {
     }
 
     static get serviceType(): string {
-        return "tee_log";
+        return TEE_LOG_SERVICE_TYPE;
     }
 
     async initialize(runtime: IAgentRuntime): Promise<void> {

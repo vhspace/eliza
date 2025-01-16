@@ -92,8 +92,10 @@ interface TransactionGQL {
     };
 }
 
+const IRYS_SERVICE_TYPE = "irys";
+
 export class IrysService extends Service implements IIrysService {
-    static serviceType: string = "irys";
+    static serviceType: string = IRYS_SERVICE_TYPE;
 
     private runtime: IAgentRuntime | null = null;
     private irysUploader: any | null = null;

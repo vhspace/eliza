@@ -23,10 +23,10 @@ export interface IIntifaceService extends Service {
     getDevices(): any[];
 }
 
-const INTIFACE = "intiface";
+const INTIFACE_SERVICE_TYPE = "intiface";
 
 export class IntifaceService extends Service implements IIntifaceService {
-    static serviceType: string = INTIFACE;
+    static serviceType: string = INTIFACE_SERVICE_TYPE;
     private client: ButtplugClient;
     private connected = false;
     private devices: Map<string, any> = new Map();
@@ -348,7 +348,9 @@ const vibrateAction: Action = {
         options: any,
         callback: HandlerCallback
     ) => {
-        const service = runtime.getService<IIntifaceService>(INTIFACE);
+        const service = runtime.getService<IIntifaceService>(
+            INTIFACE_SERVICE_TYPE
+        );
         if (!service) {
             throw new Error("Intiface service not available");
         }
@@ -456,7 +458,9 @@ const rotateAction: Action = {
         options: any,
         callback: HandlerCallback
     ) => {
-        const service = runtime.getService<IIntifaceService>(INTIFACE);
+        const service = runtime.getService<IIntifaceService>(
+            INTIFACE_SERVICE_TYPE
+        );
         if (!service || !service.rotate) {
             throw new Error("Rotation not supported");
         }
@@ -512,7 +516,9 @@ const batteryAction: Action = {
         options: any,
         callback: HandlerCallback
     ) => {
-        const service = runtime.getService<IIntifaceService>(INTIFACE);
+        const service = runtime.getService<IIntifaceService>(
+            INTIFACE_SERVICE_TYPE
+        );
         if (!service || !service.getBatteryLevel) {
             throw new Error("Battery level check not supported");
         }
