@@ -8,6 +8,8 @@ import {
     VerifiableLogQuery,
 } from "@elizaos/plugin-tee-verifiable-log";
 
+const VERIFIABLE_LOGGING_TYPE = "verifiable_logging";
+
 export function createVerifiableLogApiRouter(
     agents: Map<string, AgentRuntime>
 ) {
@@ -26,7 +28,7 @@ export function createVerifiableLogApiRouter(
                     .next().value;
 
                 const pageQuery = await agentRuntime.callServiceMethod(
-                    "verifiable_logging",
+                    VERIFIABLE_LOGGING_TYPE,
                     "listAgent"
                 );
 
@@ -60,7 +62,7 @@ export function createVerifiableLogApiRouter(
                     .next().value;
 
                 const pageQuery = await agentRuntime.callServiceMethod(
-                    "verifiable_logging",
+                    VERIFIABLE_LOGGING_TYPE,
                     "generateAttestation",
                     verifiableLogQuery
                 );
@@ -102,7 +104,7 @@ export function createVerifiableLogApiRouter(
                     .next().value;
 
                 const pageQuery = await agentRuntime.callServiceMethod(
-                    "verifiable_logging",
+                    VERIFIABLE_LOGGING_TYPE,
                     "pageQueryLogs",
                     verifiableLogQuery,
                     page,
