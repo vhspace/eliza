@@ -2,7 +2,6 @@ import {
     IAgentRuntime,
     ModelClass,
     Service,
-    ServiceType,
     elizaLogger,
     generateObjectDeprecated,
     generateText,
@@ -24,7 +23,7 @@ export class GoplusSecurityService
         return this;
     }
     static get serviceType() {
-        return ServiceType.GOPLUS_SECURITY;
+        return "goplus_security";
     }
 
     initialize(runtime: IAgentRuntime): Promise<void> {
