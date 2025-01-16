@@ -1388,31 +1388,6 @@ export interface IrysTimestamp {
     to: number;
 }
 
-export interface IIrysService extends Service {
-    getDataFromAnAgent(
-        agentsWalletPublicKeys: string[],
-        tags: GraphQLTag[],
-        timestamp: IrysTimestamp
-    ): Promise<DataIrysFetchedFromGQL>;
-    workerUploadDataOnIrys(
-        data: any,
-        dataType: IrysDataType,
-        messageType: IrysMessageType,
-        serviceCategory: string[],
-        protocol: string[],
-        validationThreshold: number[],
-        minimumProviders: number[],
-        testProvider: boolean[],
-        reputation: number[]
-    ): Promise<UploadIrysResult>;
-    providerUploadDataOnIrys(
-        data: any,
-        dataType: IrysDataType,
-        serviceCategory: string[],
-        protocol: string[]
-    ): Promise<UploadIrysResult>;
-}
-
 export interface ITeeLogService extends Service {
     getInstance(): ITeeLogService;
     log(
