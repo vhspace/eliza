@@ -939,7 +939,7 @@ export async function createAgent(
             getSecret(character, "RESERVOIR_API_KEY")
                 ? createNFTCollectionsPlugin()
                 : null,
-            getSecret(character, "TRON_PRIVATE_KEY") ? tronPlugin() : null,
+            getSecret(character, "TRON_PRIVATE_KEY") ? tronPlugin : null,
         ].filter(Boolean),
         providers: [],
         actions: [],
