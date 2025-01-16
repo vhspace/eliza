@@ -1353,41 +1353,6 @@ export interface IAwsS3Service extends Service {
     generateSignedUrl(fileName: string, expiresIn: number): Promise<string>;
 }
 
-export interface UploadIrysResult {
-    success: boolean;
-    url?: string;
-    error?: string;
-    data?: any;
-}
-
-export interface DataIrysFetchedFromGQL {
-    success: boolean;
-    data: any;
-    error?: string;
-}
-
-export interface GraphQLTag {
-    name: string;
-    values: any[];
-}
-
-export const enum IrysMessageType {
-    REQUEST = "REQUEST",
-    DATA_STORAGE = "DATA_STORAGE",
-    REQUEST_RESPONSE = "REQUEST_RESPONSE",
-}
-
-export const enum IrysDataType {
-    FILE = "FILE",
-    IMAGE = "IMAGE",
-    OTHER = "OTHER",
-}
-
-export interface IrysTimestamp {
-    from: number;
-    to: number;
-}
-
 export interface ITeeLogService extends Service {
     getInstance(): ITeeLogService;
     log(
@@ -1412,7 +1377,6 @@ export enum ServiceType {
     BUTTPLUG = "buttplug",
     SLACK = "slack",
     VERIFIABLE_LOGGING = "verifiable_logging",
-    IRYS = "irys",
     TEE_LOG = "tee_log",
     GOPLUS_SECURITY = "goplus_security",
 }

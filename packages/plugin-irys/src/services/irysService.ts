@@ -2,14 +2,8 @@ import {
     IAgentRuntime,
     Service,
     ServiceType,
-    UploadIrysResult,
-    DataIrysFetchedFromGQL,
-    GraphQLTag,
-    IrysMessageType,
     generateMessageResponse,
     ModelClass,
-    IrysDataType,
-    IrysTimestamp,
 } from "@elizaos/core";
 import { Uploader } from "@irys/upload";
 import { BaseEth } from "@irys/upload-ethereum";
@@ -41,6 +35,41 @@ interface IIrysService extends Service {
     ): Promise<UploadIrysResult>;
 }
 
+interface UploadIrysResult {
+    success: boolean;
+    url?: string;
+    error?: string;
+    data?: any;
+}
+
+interface DataIrysFetchedFromGQL {
+    success: boolean;
+    data: any;
+    error?: string;
+}
+
+interface GraphQLTag {
+    name: string;
+    values: any[];
+}
+
+const enum IrysMessageType {
+    REQUEST = "REQUEST",
+    DATA_STORAGE = "DATA_STORAGE",
+    REQUEST_RESPONSE = "REQUEST_RESPONSE",
+}
+
+const enum IrysDataType {
+    FILE = "FILE",
+    IMAGE = "IMAGE",
+    OTHER = "OTHER",
+}
+
+interface IrysTimestamp {
+    from: number;
+    to: number;
+}
+
 interface NodeGQL {
     id: string;
     address: string;
@@ -64,7 +93,7 @@ interface TransactionGQL {
 }
 
 export class IrysService extends Service implements IIrysService {
-    static serviceType: ServiceType = ServiceType.IRYS;
+    static serviceType: string = "irys";
 
     private runtime: IAgentRuntime | null = null;
     private irysUploader: any | null = null;
