@@ -5,11 +5,12 @@ import { SqliteDatabaseAdapter } from "@elizaos/adapter-sqlite";
 import { SupabaseDatabaseAdapter } from "@elizaos/adapter-supabase";
 import { AutoClientInterface } from "@elizaos/client-auto";
 import { DiscordClientInterface } from "@elizaos/client-discord";
-import { FarcasterAgentClient } from "@elizaos/client-farcaster";
+import { InstagramClientInterface } from "@elizaos/client-instagram";
 import { LensAgentClient } from "@elizaos/client-lens";
 import { SlackClientInterface } from "@elizaos/client-slack";
 import { TelegramClientInterface } from "@elizaos/client-telegram";
 import { TwitterClientInterface } from "@elizaos/client-twitter";
+import { FarcasterClientInterface } from "@elizaos/client-farcaster";
 // import { ReclaimAdapter } from "@elizaos/plugin-reclaim";
 import { PrimusAdapter } from "@elizaos/plugin-primus";
 
@@ -29,10 +30,10 @@ import {
     IDatabaseAdapter,
     IDatabaseCacheAdapter,
     ModelProviderName,
+    parseBooleanFromText,
     settings,
     stringToUuid,
     validateCharacterConfig,
-    parseBooleanFromText,
 } from "@elizaos/core";
 import { zgPlugin } from "@elizaos/plugin-0g";
 
@@ -66,7 +67,6 @@ import { coinmarketcapPlugin } from "@elizaos/plugin-coinmarketcap";
 import { confluxPlugin } from "@elizaos/plugin-conflux";
 import { createCosmosPlugin } from "@elizaos/plugin-cosmos";
 import { cronosZkEVMPlugin } from "@elizaos/plugin-cronoszkevm";
-import { echoChambersPlugin } from "@elizaos/plugin-echochambers";
 import { evmPlugin } from "@elizaos/plugin-evm";
 import { flowPlugin } from "@elizaos/plugin-flow";
 import { fuelPlugin } from "@elizaos/plugin-fuel";
@@ -89,6 +89,7 @@ import { quaiPlugin } from "@elizaos/plugin-quai";
 import { sgxPlugin } from "@elizaos/plugin-sgx";
 import { solanaPlugin } from "@elizaos/plugin-solana";
 import { solanaAgentkitPlguin } from "@elizaos/plugin-solana-agentkit";
+import { squidRouterPlugin } from "@elizaos/plugin-squid-router";
 import { stargazePlugin } from "@elizaos/plugin-stargaze";
 import { storyPlugin } from "@elizaos/plugin-story";
 import { suiPlugin } from "@elizaos/plugin-sui";
@@ -98,8 +99,10 @@ import { teeMarlinPlugin } from "@elizaos/plugin-tee-marlin";
 import { verifiableLogPlugin } from "@elizaos/plugin-tee-verifiable-log";
 import { thirdwebPlugin } from "@elizaos/plugin-thirdweb";
 import { tonPlugin } from "@elizaos/plugin-ton";
-import { squidRouterPlugin } from "@elizaos/plugin-squid-router";
 import { webSearchPlugin } from "@elizaos/plugin-web-search";
+import { echoChambersPlugin } from "@elizaos/plugin-echochambers";
+import { dexScreenerPlugin } from "@elizaos/plugin-dexscreener";
+
 import { zksyncEraPlugin } from "@elizaos/plugin-zksync-era";
 import Database from "better-sqlite3";
 import fs from "fs";
@@ -107,6 +110,7 @@ import net from "net";
 import path from "path";
 import { fileURLToPath } from "url";
 import yargs from "yargs";
+
 
 const __filename = fileURLToPath(import.meta.url); // get the resolved path to the file
 const __dirname = path.dirname(__filename); // get the name of the directory
@@ -185,12 +189,17 @@ function mergeCharacters(base: Character, child: Character): Character {
     };
     return mergeObjects(base, child);
 }
-async function loadCharacter(filePath: string): Promise<Character> {
-    const content = tryLoadFile(filePath);
-    if (!content) {
-        throw new Error(`Character file not found: ${filePath}`);
-    }
-    let character = JSON.parse(content);
+
+async function loadCharacterFromUrl(url: string): Promise<Character> {
+    const response = await fetch(url);
+    const character = await response.json();
+    return jsonToCharacter(url, character);
+}
+
+async function jsonToCharacter(
+    filePath: string,
+    character: any
+): Promise<Character> {
     validateCharacterConfig(character);
 
     // .id isn't really valid
@@ -226,6 +235,15 @@ async function loadCharacter(filePath: string): Promise<Character> {
         }
     }
     return character;
+}
+
+async function loadCharacter(filePath: string): Promise<Character> {
+    const content = tryLoadFile(filePath);
+    if (!content) {
+        throw new Error(`Character file not found: ${filePath}`);
+    }
+    let character = JSON.parse(content);
+    return jsonToCharacter(filePath, character);
 }
 
 export async function loadCharacters(
@@ -306,6 +324,16 @@ export async function loadCharacters(
     }
 
     if (loadedCharacters.length === 0) {
+        if (
+            process.env.REMOTE_CHARACTER_URL != "" &&
+            process.env.REMOTE_CHARACTER_URL.startsWith("http")
+        ) {
+            const character = await loadCharacterFromUrl(
+                process.env.REMOTE_CHARACTER_URL
+            );
+            loadedCharacters.push(character);
+        }
+
         elizaLogger.info("No characters found, using default character");
         loadedCharacters.push(defaultCharacter);
     }
@@ -395,7 +423,7 @@ export function getTokenForProvider(
             );
         case ModelProviderName.OPENROUTER:
             return (
-                character.settings?.secrets?.OPENROUTER ||
+                character.settings?.secrets?.OPENROUTER_API_KEY ||
                 settings.OPENROUTER_API_KEY
             );
         case ModelProviderName.GROK:
@@ -586,11 +614,16 @@ export async function initializeClients(
         }
     }
 
+    if (clientTypes.includes(Clients.INSTAGRAM)) {
+        const instagramClient = await InstagramClientInterface.start(runtime);
+        if (instagramClient) {
+            clients.instagram = instagramClient;
+        }
+    }
+
     if (clientTypes.includes(Clients.FARCASTER)) {
-        // why is this one different :(
-        const farcasterClient = new FarcasterAgentClient(runtime);
+        const farcasterClient = await FarcasterClientInterface.start(runtime);
         if (farcasterClient) {
-            farcasterClient.start();
             clients.farcaster = farcasterClient;
         }
     }
@@ -740,6 +773,9 @@ export async function createAgent(
         // character.plugins are handled when clients are added
         plugins: [
             bootstrapPlugin,
+            getSecret(character, "DEXSCREENER_API_KEY")
+                ? dexScreenerPlugin
+                : null,
             getSecret(character, "CONFLUX_CORE_PRIVATE_KEY")
                 ? confluxPlugin
                 : null,
@@ -1118,14 +1154,17 @@ startAgents().catch((error) => {
 });
 
 // Prevent unhandled exceptions from crashing the process if desired
-if (process.env.PREVENT_UNHANDLED_EXIT && parseBooleanFromText(process.env.PREVENT_UNHANDLED_EXIT)) {
+if (
+    process.env.PREVENT_UNHANDLED_EXIT &&
+    parseBooleanFromText(process.env.PREVENT_UNHANDLED_EXIT)
+) {
     // Handle uncaught exceptions to prevent the process from crashing
-    process.on('uncaughtException', function(err) {
+    process.on("uncaughtException", function (err) {
         console.error("uncaughtException", err);
     });
 
     // Handle unhandled rejections to prevent the process from crashing
-    process.on('unhandledRejection', function(err) {
+    process.on("unhandledRejection", function (err) {
         console.error("unhandledRejection", err);
     });
 }
