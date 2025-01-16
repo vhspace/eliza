@@ -232,7 +232,6 @@ export class AgentRuntime implements IAgentRuntime {
             );
         }
 
-        // The method expects one object parameter, so we just call it directly:
         const result = method(args);
         return Promise.resolve(result);
     }
