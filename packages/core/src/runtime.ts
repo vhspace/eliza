@@ -25,7 +25,6 @@ import { parseJsonArrayFromText } from "./parsing.ts";
 import { formatPosts } from "./posts.ts";
 import { getProviders } from "./providers.ts";
 import { RAGKnowledgeManager } from "./ragknowledge.ts";
-
 import settings from "./settings.ts";
 import {
     Character,
