@@ -70,6 +70,14 @@ export class IntifaceService extends Service implements IIntifaceService {
         return this;
     }
 
+    getMethods() {
+        return {
+            vibrate: this.vibrate.bind(this),
+            rotate: this.rotate.bind(this),
+            getBatteryLevel: this.getBatteryLevel.bind(this),
+        };
+    }
+
     async initialize(runtime: IAgentRuntime): Promise<void> {
         this.config = await validateIntifaceConfig(runtime);
         this.preferredDeviceName = this.config.DEVICE_NAME;
