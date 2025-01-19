@@ -583,7 +583,7 @@ export async function createAgent(
                     //   coinbaseMassPaymentsPlugin,
                     //   tradePlugin,
                     //   tokenContractPlugin,
-                      advancedTradePlugin,
+                    //   advancedTradePlugin,
                   ]
                 : []),
             ...(teeMode !== TEEMode.OFF && walletSecretSalt

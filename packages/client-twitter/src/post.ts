@@ -430,7 +430,7 @@ export class TwitterPostClient {
                     twitterUserName: this.client.profile.username,
                 }
             );
-
+            elizaLogger.debug("generate post prompt:\n" + twitterPostTemplate);
             const context = composeContext({
                 state,
                 template:

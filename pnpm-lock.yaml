@@ -14,9 +14,6 @@ importers:
       '@0glabs/0g-ts-sdk':
         specifier: 0.2.1
         version: 0.2.1(bufferutil@4.0.9)(ethers@6.13.4(bufferutil@4.0.9)(utf-8-validate@5.0.10))(utf-8-validate@5.0.10)
-      '@coinbase/coinbase-sdk':
-        specifier: 0.10.0
-        version: 0.10.0(bufferutil@4.0.9)(typescript@5.6.3)(utf-8-validate@5.0.10)(zod@3.23.8)
       '@deepgram/sdk':
         specifier: ^3.9.0
         version: 3.9.0(bufferutil@4.0.9)(encoding@0.1.13)(utf-8-validate@5.0.10)
@@ -1137,6 +1134,9 @@ importers:
 
   packages/plugin-coinbase:
     dependencies:
+      '@coinbase/coinbase-sdk':
+        specifier: 0.15.0
+        version: 0.15.0(bufferutil@4.0.9)(typescript@5.6.3)(utf-8-validate@5.0.10)(zod@3.23.8)
       '@elizaos/core':
         specifier: workspace:*
         version: link:../core
@@ -1146,9 +1146,6 @@ importers:
       coinbase-advanced-sdk:
         specifier: file:../../packages/plugin-coinbase/advanced-sdk-ts
         version: '@coinbase-samples/advanced-sdk-ts@file:packages/plugin-coinbase/advanced-sdk-ts(encoding@0.1.13)'
-      coinbase-api:
-        specifier: 1.0.5
-        version: 1.0.5(bufferutil@4.0.9)(utf-8-validate@5.0.10)
       jsonwebtoken:
         specifier: ^9.0.2
         version: 9.0.2
@@ -3226,8 +3223,8 @@ packages:
   '@coinbase-samples/advanced-sdk-ts@file:packages/plugin-coinbase/advanced-sdk-ts':
     resolution: {directory: packages/plugin-coinbase/advanced-sdk-ts, type: directory}
 
-  '@coinbase/coinbase-sdk@0.10.0':
-    resolution: {integrity: sha512-sqLH7dE/0XSn5jHddjVrC1PR77sQUEytYcQAlH2d8STqRARcvddxVAByECUIL32MpbdJY7Wca3KfSa6qo811Mg==}
+  '@coinbase/coinbase-sdk@0.15.0':
+    resolution: {integrity: sha512-i2YH/E/HcvUM+VgT+245CzcAyJ6kQg8PJDHBHsFwFdk2vAn+iQn0bjt+C9kgTWvzxUuJA4koHgkcGpdRQa2F/A==}
 
   '@colors/colors@1.5.0':
     resolution: {integrity: sha512-ooWCrlZP11i8GImSjTHYHLkvFDP48nS4+204nGb1RiX/WXYHmJA2III9/e2DWVabCESdW7hBAEzHRqUn9OUVvQ==}
@@ -9756,9 +9753,6 @@ packages:
   co@4.6.0:
     resolution: {integrity: sha512-QVb0dM5HvG+uaxitm8wONl7jltx8dqhfU33DcqtOZcLSVIKSDDLDi7+0LbAKiyI8hD9u42m2YxXSkMGWThaecQ==}
     engines: {iojs: '>= 1.0.0', node: '>= 0.12.0'}
-
-  coinbase-api@1.0.5:
-    resolution: {integrity: sha512-5Rq6hYKnJNc9v4diD8M6PStSc2hwMgfOlB+pb1LSyh5q2xg9ZKi3Gu8ZVxaDnKXmgQgrjI4xJLMpc3fiLgzsew==}
 
   collapse-white-space@2.1.0:
     resolution: {integrity: sha512-loKTxY1zCOuG4j9f6EPnuyyYkf58RnhhWTvRoZEokgB+WbdXehfjFviyOVYkqzEWz1Q5kRiZdBYS5SwxbQYwzw==}
@@ -21443,7 +21437,7 @@ snapshots:
     transitivePeerDependencies:
       - encoding
 
-  '@coinbase/coinbase-sdk@0.10.0(bufferutil@4.0.9)(typescript@5.6.3)(utf-8-validate@5.0.10)(zod@3.23.8)':
+  '@coinbase/coinbase-sdk@0.15.0(bufferutil@4.0.9)(typescript@5.6.3)(utf-8-validate@5.0.10)(zod@3.23.8)':
     dependencies:
       '@scure/bip32': 1.6.1
       abitype: 1.0.8(typescript@5.6.3)(zod@3.23.8)
@@ -30967,18 +30961,6 @@ snapshots:
   cmd-shim@6.0.3: {}
 
   co@4.6.0: {}
-
-  coinbase-api@1.0.5(bufferutil@4.0.9)(utf-8-validate@5.0.10):
-    dependencies:
-      axios: 1.7.9(debug@4.4.0)
-      isomorphic-ws: 4.0.1(ws@7.5.10(bufferutil@4.0.9)(utf-8-validate@5.0.10))
-      jsonwebtoken: 9.0.2
-      nanoid: 3.3.8
-      ws: 7.5.10(bufferutil@4.0.9)(utf-8-validate@5.0.10)
-    transitivePeerDependencies:
-      - bufferutil
-      - debug
-      - utf-8-validate
 
   collapse-white-space@2.1.0: {}
 

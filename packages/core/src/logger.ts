@@ -19,7 +19,7 @@ class ElizaLogger {
     }
 
     private isNode: boolean;
-    verbose = false;
+    verbose = true;
     closeByNewLine = true;
     useIcons = true;
     logsTitle = "LOGS";

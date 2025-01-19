@@ -15,16 +15,23 @@ import { postTweet } from "@elizaos/plugin-twitter";
 import express from "express";
 import { WebhookEvent } from "./types";
 import { pnlProvider } from "@elizaos/plugin-coinbase";
+import { Coinbase, Wallet } from "@coinbase/coinbase-sdk";
+import { initializeWallet } from "../../plugin-coinbase/src/utils";
+
+ export type WalletType = 'short_term_trading' | 'long_term_trading' | 'dry_powder' | 'operational_capital';
+ export type CoinbaseWallet = { wallet: Wallet, walletType: WalletType };
 
 export class CoinbaseClient implements Client {
     private runtime: IAgentRuntime;
     private server: express.Application;
     private port: number;
+    private wallets: CoinbaseWallet[];
 
     constructor(runtime: IAgentRuntime) {
         this.runtime = runtime;
         this.server = express();
         this.port = Number(runtime.getSetting("COINBASE_WEBHOOK_PORT")) || 3001;
+        this.wallets = [];
     }
 
     async initialize(): Promise<void> {
@@ -32,6 +39,7 @@ export class CoinbaseClient implements Client {
         try {
             elizaLogger.info("Coinbase client initialized successfully");
             await this.setupWebhookEndpoint();
+            await this.initializeWallets();
         } catch (error) {
             elizaLogger.error("Failed to initialize Coinbase client:", error);
             throw error;
@@ -94,6 +102,16 @@ export class CoinbaseClient implements Client {
             }
         });
     }
+
+    private async initializeWallets() {
+       const walletTypes: WalletType[] = ['short_term_trading', 'long_term_trading', 'dry_powder', 'operational_capital'];
+       const networkId = Coinbase.networks.EthereumMainnet;
+       for (const walletType of walletTypes) {
+           const wallet = await initializeWallet(this.runtime, networkId, walletType);
+           this.wallets.push(wallet);
+       }
+    }
+
 
     private async generateTweetContent(event: WebhookEvent, amountInCurrency: number, pnlText: string, formattedTimestamp: string, state: State): Promise<string> {
         try {
@@ -168,12 +186,19 @@ Generate only the tweet text, no commentary or markdown.`;
                     side: event.event.toUpperCase(),
                     price: event.price,
                     amount: amount,
-                    timestamp: event.timestamp
+                    timestamp: event.timestamp,
+                    walletType: this.wallets[0].walletType,
                 }
             },
             createdAt: Date.now()
         };
-
+        // get short term trading wallet
+        const shortTermTradingWallet = this.wallets.find(wallet => wallet.walletType === 'short_term_trading');
+        if (!shortTermTradingWallet) {
+            elizaLogger.error("Short term trading wallet not found");
+            return;
+        }
+        // call dex on short term trading wallet
         await this.runtime.messageManager.createMemory(memory);
         const state = await this.runtime.composeState(memory);
         const callback: HandlerCallback = async (content: Content) => {
@@ -195,12 +220,11 @@ Generate only the tweet text, no commentary or markdown.`;
         try {
             const tweetContent = await this.generateTweetContent(event, amount, pnlText, formattedTimestamp, state);
             elizaLogger.info("Generated tweet content:", tweetContent);
-            const response = await postTweet(tweetContent);
-            elizaLogger.info("Tweet response:", response);
+            // const response = await postTweet(tweetContent);
+            // elizaLogger.info("Tweet response:", response);
         } catch (error) {
             elizaLogger.error("Failed to post tweet:", error);
         }
-            return [];
         };
 
         await this.runtime.processActions(memory, [memory], state, callback);
