@@ -57,7 +57,6 @@
     "@elizaos/plugin-goat": "workspace:*",
     "@elizaos/plugin-lensNetwork": "workspace:*",
     "@elizaos/plugin-icp": "workspace:*",
-        "@elizaos/plugin-initia": "workspace:*",
     "@elizaos/plugin-image-generation": "workspace:*",
     "@elizaos/plugin-movement": "workspace:*",
     "@elizaos/plugin-massa": "workspace:*",
