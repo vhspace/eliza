@@ -36,7 +36,7 @@ export class SwapAction {
         ).toNumber();
 
         const router = tronWeb.contract(routerAbi, SUNSWAPV2_ROUTER);
-        const deadline = Date.now() + 60000;
+        const deadline = Math.floor(Date.now() / 1000) + 60;
 
         elizaLogger.log(
             `Performing swap on TRON\nFrom: ${params.fromToken}\nTo: ${params.toToken}\nAmount: ${params.amount} (${fromAmount})`
