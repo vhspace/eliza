@@ -5,11 +5,11 @@ export const tronEnvSchema = z.object({
     TRON_PRIVATE_KEY: z.string().min(1, "TRON_PRIVATE_KEY is required"),
 });
 
-export type DiscordConfig = z.infer<typeof discordEnvSchema>;
+export type TronConfig = z.infer<typeof tronEnvSchema>
 
 export async function validateTronConfig(
     runtime: IAgentRuntime
-): Promise<DiscordConfig> {
+): Promise<TronConfig> {
     try {
         const config = {
             TRON_PRIVATE_KEY:
@@ -17,7 +17,7 @@ export async function validateTronConfig(
                 process.env.TRON_PRIVATE_KEY,
         };
 
-        return discordEnvSchema.parse(config);
+        return tronEnvSchema.parse(config);
     } catch (error) {
         if (error instanceof z.ZodError) {
             const errorMessages = error.errors
