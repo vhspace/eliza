@@ -1,7 +1,7 @@
 import { IAgentRuntime } from "@elizaos/core";
 import { z } from "zod";
 
-export const discordEnvSchema = z.object({
+export const tronEnvSchema = z.object({
     TRON_PRIVATE_KEY: z.string().min(1, "TRON_PRIVATE_KEY is required"),
 });
 
