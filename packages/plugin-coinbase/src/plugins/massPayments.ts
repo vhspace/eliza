@@ -114,7 +114,7 @@ async function executeMassPayout(
     let sendingWallet: Wallet;
     try {
         elizaLogger.debug("Initializing sending wallet");
-        sendingWallet = await initializeWallet(runtime, networkId);
+        sendingWallet = (await initializeWallet(runtime, networkId)).wallet;
     } catch (error) {
         elizaLogger.error("Error initializing sending wallet:", error);
         throw error;

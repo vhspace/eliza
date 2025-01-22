@@ -139,7 +139,7 @@ export const deployTokenContractAction: Action = {
                 totalSupply,
             } = contractDetails.object;
             elizaLogger.info("Contract details:", contractDetails.object);
-            const wallet = await initializeWallet(runtime, network);
+            const { wallet } = await initializeWallet(runtime, network);
             let contract: SmartContract;
             let deploymentDetails;
 
@@ -348,7 +348,7 @@ export const invokeContractAction: Action = {
                 assetId,
                 networkId,
             } = invocationDetails.object;
-            const wallet = await initializeWallet(runtime, networkId);
+            const { wallet } = await initializeWallet(runtime, networkId);
 
             // Prepare invocation options
             const invocationOptions = {
