@@ -38,8 +38,10 @@ export class CoinbaseClient implements Client {
         elizaLogger.info("Initializing Coinbase client");
         try {
             elizaLogger.info("Coinbase client initialized successfully");
-            await this.setupWebhookEndpoint();
             await this.initializeWallets();
+            elizaLogger.info("Wallets initialized successfully");
+            await this.setupWebhookEndpoint();
+            elizaLogger.info("Webhook endpoint setup successfully");
         } catch (error) {
             elizaLogger.error("Failed to initialize Coinbase client:", error);
             throw error;
@@ -104,10 +106,20 @@ export class CoinbaseClient implements Client {
     }
 
     private async initializeWallets() {
+        Coinbase.configure({
+            apiKeyName:
+                this.runtime.getSetting("COINBASE_API_KEY") ??
+                process.env.COINBASE_API_KEY,
+            privateKey:
+                this.runtime.getSetting("COINBASE_PRIVATE_KEY") ??
+                process.env.COINBASE_PRIVATE_KEY,
+        });
        const walletTypes: WalletType[] = ['short_term_trading', 'long_term_trading', 'dry_powder', 'operational_capital'];
-       const networkId = Coinbase.networks.EthereumMainnet;
+       const networkId = Coinbase.networks.BaseMainnet;
        for (const walletType of walletTypes) {
+           elizaLogger.log('walletType ', walletType);
            const wallet = await initializeWallet(this.runtime, networkId, walletType);
+           elizaLogger.log('Successfully loaded wallet ', wallet.wallet.getId());
            this.wallets.push(wallet);
        }
     }
@@ -170,6 +182,12 @@ Generate only the tweet text, no commentary or markdown.`;
         const roomId = stringToUuid("coinbase-trading");
         await this.runtime.ensureRoomExists(roomId);
         await this.runtime.ensureParticipantInRoom(this.runtime.agentId, roomId);
+        // TODO: based off of the signal decide which wallet to use
+        const wallet = this.wallets.find(wallet => wallet.walletType === 'short_term_trading');
+        if (!wallet) {
+            elizaLogger.error("Short term trading wallet not found");
+            return;
+        }
 
         const amount = Number(this.runtime.getSetting('COINBASE_TRADING_AMOUNT')) ?? 1;
         const memory: Memory = {
@@ -187,17 +205,12 @@ Generate only the tweet text, no commentary or markdown.`;
                     price: event.price,
                     amount: amount,
                     timestamp: event.timestamp,
-                    walletType: this.wallets[0].walletType,
+                    walletType: wallet.walletType,
                 }
             },
             createdAt: Date.now()
         };
         // get short term trading wallet
-        const shortTermTradingWallet = this.wallets.find(wallet => wallet.walletType === 'short_term_trading');
-        if (!shortTermTradingWallet) {
-            elizaLogger.error("Short term trading wallet not found");
-            return;
-        }
         // call dex on short term trading wallet
         await this.runtime.messageManager.createMemory(memory);
         const state = await this.runtime.composeState(memory);
@@ -213,18 +226,18 @@ Generate only the tweet text, no commentary or markdown.`;
             timeZoneName: 'short'
         }).format(new Date(event.timestamp));
 
-        const pnl = await pnlProvider.get(this.runtime, memory);
+        // const pnl = await pnlProvider.get(this.runtime, memory);
 
-        const pnlText = `Unrealized PNL: $${pnl.toFixed(2)}`;
+        // const pnlText = `Unrealized PNL: $${pnl.toFixed(2)}`;
 
-        try {
-            const tweetContent = await this.generateTweetContent(event, amount, pnlText, formattedTimestamp, state);
-            elizaLogger.info("Generated tweet content:", tweetContent);
-            // const response = await postTweet(tweetContent);
-            // elizaLogger.info("Tweet response:", response);
-        } catch (error) {
-            elizaLogger.error("Failed to post tweet:", error);
-        }
+        // try {
+        //     const tweetContent = await this.generateTweetContent(event, amount, pnlText, formattedTimestamp, state);
+        //     elizaLogger.info("Generated tweet content:", tweetContent);
+        //     // const response = await postTweet(tweetContent);
+        //     // elizaLogger.info("Tweet response:", response);
+        // } catch (error) {
+        //     elizaLogger.error("Failed to post tweet:", error);
+        // }
         };
 
         await this.runtime.processActions(memory, [memory], state, callback);
