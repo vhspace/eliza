@@ -33,7 +33,7 @@
         "cross-env": "7.0.3",
         "husky": "9.1.7",
         "jest": "^29.7.0",
-        "lerna": "8.1.5",
+        "lerna": "8.1.9",
         "only-allow": "1.2.1",
         "turbo": "2.3.3",
         "typedoc": "0.26.11",
@@ -51,7 +51,8 @@
             "@polkadot/types-create": "10.13.1",
             "@polkadot/types-codec": "10.13.1",
             "@ai-sdk/provider": "1.0.6",
-            "@ai-sdk/provider-utils": "2.1.2"
+            "@ai-sdk/provider-utils": "2.1.2",
+            "parse-url": ">=6.0.1"
         }
     },
     "engines": {
