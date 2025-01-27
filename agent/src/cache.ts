@@ -1,3 +1,8 @@
+// TODO: We want to refactor cache to be DB only. The cache should just live in the DB that is being used by everything else
+// Redis is overkill for an operation that doesn't need to be called very often (< 2 per second) and file storage isn't compatible with many environments
+// If we could roll cache into the database loader then we could save some dev effort
+// Having a separate cache manager that uses the same database adapter as the memory manager sounds good
+
 import { RedisClient } from "@elizaos/adapter-redis"
 import {
     CacheManager,

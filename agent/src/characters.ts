@@ -1,3 +1,7 @@
+// TODO: Characters should be loaded from memory, with fallbacks to onchain, from file etc for backwards compatibility
+// The CLI should enable users to import / export character files, but primarily they should be edited from the GUI
+// Characters in memory can update themselves, so we will want to make this the default and deprecate other options
+// For loading from chain we might want to consider this as an import option instead of a runtime option
 
 import {
     type Character,

@@ -1,3 +1,7 @@
+// TODO: Move all setup into the adapters themselves and dynamically import the adapter based on the current project.json
+// This can be templated so that the agent can be cloned into a new repo and the correct adapter can be loaded at runtime / dynamically
+// The goal is that the CLI can add or replace the adapter with a single line
+
 import { MongoDBDatabaseAdapter } from "@elizaos/adapter-mongodb"
 import { PGLiteDatabaseAdapter } from "@elizaos/adapter-pglite"
 import { PostgresDatabaseAdapter } from "@elizaos/adapter-postgres"

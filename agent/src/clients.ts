@@ -1,3 +1,7 @@
+// TODO: Move all client setup into each client package
+// Clients should be dynamically imported and registered at runtime like other plugins
+// We make just want to turn all clients into plugins to keep it simple
+
 import { AlexaClientInterface } from "@elizaos/client-alexa"
 import { AutoClientInterface } from "@elizaos/client-auto"
 import { DiscordClientInterface } from "@elizaos/client-discord"

@@ -1,3 +1,6 @@
+// TODO: Plugin registry should happen entirely inside the plugin so that plugins can be one-line added to the file from CLI by template
+// CLI should be able to `elizaos plugin add <pluginname>` and it will be validated, dynamically imported and the registerPlugin(runtime) will be called for that module
+// Instead of calling getSecret, we'll load the required secrets from the plugin manifest, check for them in our database or character file and verify that they are set
 
 import {
     type Character,
