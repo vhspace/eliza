@@ -476,9 +476,10 @@ export class LlamaService extends Service {
         try {
             await this.initialize(runtime);
 
-            if (runtime.modelProvider === ModelProviderName.OLLAMA) {
-                return await this.ollamaCompletion(prompt);
-            }
+            // TODO: Migrate ollama to ollama plgin
+            // if (runtime.modelProvider === ModelProviderName.OLLAMA) {
+            //     return await this.ollamaCompletion(prompt);
+            // }
 
             return await this.localCompletion(prompt);
         } catch (error) {
@@ -491,9 +492,10 @@ export class LlamaService extends Service {
         try {
             await this.initialize(runtime);
 
-            if (runtime.modelProvider === ModelProviderName.OLLAMA) {
-                return await this.ollamaEmbedding(text);
-            }
+            // TODO: Migrate to ollama plugin
+            // if (runtime.modelProvider === ModelProviderName.OLLAMA) {
+            //     return await this.ollamaEmbedding(text);
+            // }
 
             return await this.localEmbedding(text);
         } catch (error) {

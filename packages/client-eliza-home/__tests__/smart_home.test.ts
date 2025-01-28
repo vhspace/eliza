@@ -51,8 +51,6 @@ describe('SmartHomeManager', () => {
                 close: vi.fn(),
                 // Add other required database methods as needed
             },
-            token: 'test-token',
-            modelProvider: 'test-provider',
         } as MockAgentRuntime;
 
         smartHomeManager = new SmartHomeManager(mockRuntime);

@@ -1,12 +1,9 @@
 import {
     elizaLogger,
-    getEndpoint,
     type IAgentRuntime,
     type IImageDescriptionService,
-    ModelProviderName,
-    models,
     Service,
-    ServiceType,
+    ServiceType
 } from "@elizaos/core";
 import {
     AutoProcessor,
@@ -19,13 +16,10 @@ import {
     RawImage,
     type Tensor,
 } from "@huggingface/transformers";
-import sharp, { type AvailableFormatInfo, type FormatEnum } from "sharp";
 import fs from "fs";
 import os from "os";
 import path from "path";
-
-const IMAGE_DESCRIPTION_PROMPT =
-    "Describe this image and give it a title. The first line should be the title, and then a line break, then a detailed description of the image. Respond with the format 'title\\ndescription'";
+import sharp, { type AvailableFormatInfo, type FormatEnum } from "sharp";
 
 interface ImageProvider {
     initialize(): Promise<void>;
@@ -34,36 +28,6 @@ interface ImageProvider {
         mimeType: string
     ): Promise<{ title: string; description: string }>;
 }
-
-// Utility functions
-const convertToBase64DataUrl = (
-    imageData: Buffer,
-    mimeType: string
-): string => {
-    const base64Data = imageData.toString("base64");
-    return `data:${mimeType};base64,${base64Data}`;
-};
-
-const handleApiError = async (
-    response: Response,
-    provider: string
-): Promise<never> => {
-    const responseText = await response.text();
-    elizaLogger.error(
-        `${provider} API error:`,
-        response.status,
-        "-",
-        responseText
-    );
-    throw new Error(`HTTP error! status: ${response.status}`);
-};
-
-const parseImageResponse = (
-    text: string
-): { title: string; description: string } => {
-    const [title, ...descriptionParts] = text.split("\n");
-    return { title, description: descriptionParts.join("\n") };
-};
 
 class LocalImageProvider implements ImageProvider {
     private model: PreTrainedModel | null = null;
@@ -145,188 +109,6 @@ class LocalImageProvider implements ImageProvider {
     }
 }
 
-class AnthropicImageProvider implements ImageProvider {
-    constructor(private runtime: IAgentRuntime) {
-    }
-
-    async initialize(): Promise<void> {
-    }
-
-    async describeImage(
-        imageData: Buffer,
-        mimeType: string,
-    ): Promise<{ title: string; description: string }> {
-        const endpoint = getEndpoint(ModelProviderName.ANTHROPIC);
-        const apiKey = this.runtime.getSetting("ANTHROPIC_API_KEY");
-
-        const content = [
-            {type: "text", text: IMAGE_DESCRIPTION_PROMPT},
-            {
-                type: "image",
-                source: {
-                    type: "base64",
-                    media_type: mimeType,
-                    data: imageData.toString("base64"),
-                },
-            },
-        ];
-
-        const response = await fetch(`${endpoint}/messages`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "x-api-key": apiKey,
-                "anthropic-version": "2023-06-01",
-            },
-            body: JSON.stringify(
-                {
-                    model: "claude-3-haiku-20240307",
-                    max_tokens: 1024,
-                    messages: [{role: "user", content}],
-                }),
-        });
-
-        if (!response.ok) {
-            await handleApiError(response, "Anthropic");
-        }
-
-        const data = await response.json();
-        return parseImageResponse(data.content[0].text);
-    }
-}
-
-class OpenAIImageProvider implements ImageProvider {
-    constructor(private runtime: IAgentRuntime) {}
-
-    async initialize(): Promise<void> {}
-
-    async describeImage(
-        imageData: Buffer,
-        mimeType: string
-    ): Promise<{ title: string; description: string }> {
-        const imageUrl = convertToBase64DataUrl(imageData, mimeType);
-
-        const content = [
-            { type: "text", text: IMAGE_DESCRIPTION_PROMPT },
-            { type: "image_url", image_url: { url: imageUrl } },
-        ];
-
-        const endpoint =
-            this.runtime.imageVisionModelProvider === ModelProviderName.OPENAI
-                ? getEndpoint(this.runtime.imageVisionModelProvider)
-                : "https://api.openai.com/v1";
-
-        const response = await fetch(endpoint + "/chat/completions", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${this.runtime.getSetting("OPENAI_API_KEY")}`,
-            },
-            body: JSON.stringify({
-                model: "gpt-4o-mini",
-                messages: [{ role: "user", content }],
-                max_tokens: 500,
-            }),
-        });
-
-        if (!response.ok) {
-            await handleApiError(response, "OpenAI");
-        }
-
-        const data = await response.json();
-        return parseImageResponse(data.choices[0].message.content);
-    }
-}
-
-class GroqImageProvider implements ImageProvider {
-    constructor(private runtime: IAgentRuntime) {}
-
-    async initialize(): Promise<void> {}
-
-    async describeImage(
-        imageData: Buffer,
-        mimeType: string
-    ): Promise<{ title: string; description: string }> {
-        const imageUrl = convertToBase64DataUrl(imageData, mimeType);
-
-        const content = [
-            { type: "text", text: IMAGE_DESCRIPTION_PROMPT },
-            { type: "image_url", image_url: { url: imageUrl } },
-        ];
-
-        const endpoint =
-            this.runtime.imageVisionModelProvider === ModelProviderName.GROQ
-                ? getEndpoint(this.runtime.imageVisionModelProvider)
-                : "https://api.groq.com/openai/v1/";
-
-        const response = await fetch(endpoint + "/chat/completions", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${this.runtime.getSetting("GROQ_API_KEY")}`,
-            },
-            body: JSON.stringify({
-                model: /*this.runtime.imageVisionModelName ||*/ "llama-3.2-90b-vision-preview",
-                messages: [{ role: "user", content }],
-                max_tokens: 1024,
-            }),
-        });
-
-        if (!response.ok) {
-            await handleApiError(response, "Groq");
-        }
-
-        const data = await response.json();
-        return parseImageResponse(data.choices[0].message.content);
-    }
-}
-
-class GoogleImageProvider implements ImageProvider {
-    constructor(private runtime: IAgentRuntime) {}
-
-    async initialize(): Promise<void> {}
-
-    async describeImage(
-        imageData: Buffer,
-        mimeType: string
-    ): Promise<{ title: string; description: string }> {
-        const endpoint = getEndpoint(ModelProviderName.GOOGLE);
-        const apiKey = this.runtime.getSetting("GOOGLE_GENERATIVE_AI_API_KEY");
-
-        const response = await fetch(
-            `${endpoint}/v1/models/gemini-1.5-pro:generateContent?key=${apiKey}`,
-            {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    contents: [
-                        {
-                            parts: [
-                                { text: IMAGE_DESCRIPTION_PROMPT },
-                                {
-                                    inline_data: {
-                                        mime_type: mimeType,
-                                        data: imageData.toString("base64"),
-                                    },
-                                },
-                            ],
-                        },
-                    ],
-                }),
-            }
-        );
-
-        if (!response.ok) {
-            await handleApiError(response, "Google Gemini");
-        }
-
-        const data = await response.json();
-        return parseImageResponse(data.candidates[0].content.parts[0].text);
-    }
-}
-
 export class ImageDescriptionService
     extends Service
     implements IImageDescriptionService
@@ -351,81 +133,13 @@ export class ImageDescriptionService
             throw new Error("Runtime is required for image recognition");
         }
 
-        const availableModels = [
-            ModelProviderName.LLAMALOCAL,
-            ModelProviderName.ANTHROPIC,
-            ModelProviderName.GOOGLE,
-            ModelProviderName.OPENAI,
-            ModelProviderName.GROQ,
-        ].join(", ");
-
-        const model = models[this.runtime?.character?.modelProvider];
-
-        if (this.runtime.imageVisionModelProvider) {
-            if (
-                this.runtime.imageVisionModelProvider ===
-                ModelProviderName.LLAMALOCAL ||
-                this.runtime.imageVisionModelProvider ===
-                ModelProviderName.OLLAMA
-            ) {
-                this.provider = new LocalImageProvider();
-                elizaLogger.debug("Using local provider for vision model");
-            } else if (
-                this.runtime.imageVisionModelProvider ===
-                ModelProviderName.ANTHROPIC
-            ) {
-                this.provider = new AnthropicImageProvider(this.runtime);
-                elizaLogger.debug("Using anthropic for vision model");
-            } else if (
-                this.runtime.imageVisionModelProvider ===
-                ModelProviderName.GOOGLE
-            ) {
-                this.provider = new GoogleImageProvider(this.runtime);
-                elizaLogger.debug("Using google for vision model");
-            } else if (
-                this.runtime.imageVisionModelProvider ===
-                ModelProviderName.OPENAI
-            ) {
-                this.provider = new OpenAIImageProvider(this.runtime);
-                elizaLogger.debug("Using openai for vision model");
-            } else if (
-                this.runtime.imageVisionModelProvider === ModelProviderName.GROQ
-            ) {
-                this.provider = new GroqImageProvider(this.runtime);
-                elizaLogger.debug("Using Groq for vision model");
-            } else {
-                elizaLogger.warn(
-                    `Unsupported image vision model provider: ${this.runtime.imageVisionModelProvider}. ` +
-                    `Please use one of the following: ${availableModels}. ` +
-                    `Update the 'imageVisionModelProvider' field in the character file.`
-                );
-                return false;
-            }
-        } else if (
-            model === models[ModelProviderName.LLAMALOCAL] ||
-            model === models[ModelProviderName.OLLAMA]
-        ) {
-            this.provider = new LocalImageProvider();
-            elizaLogger.debug("Using local provider for vision model");
-        } else if (model === models[ModelProviderName.ANTHROPIC]) {
-            this.provider = new AnthropicImageProvider(this.runtime);
-            elizaLogger.debug("Using anthropic for vision model");
-        } else if (model === models[ModelProviderName.GOOGLE]) {
-            this.provider = new GoogleImageProvider(this.runtime);
-            elizaLogger.debug("Using google for vision model");
-        } else if (model === models[ModelProviderName.GROQ]) {
-            this.provider = new GroqImageProvider(this.runtime);
-            elizaLogger.debug("Using groq for vision model");
-        } else {
-            elizaLogger.debug("Using default openai for vision model");
-            this.provider = new OpenAIImageProvider(this.runtime);
-        }
+        this.provider = new LocalImageProvider();
 
         try {
             await this.provider.initialize();
         } catch {
             elizaLogger.error(
-                `Failed to initialize the image vision model provider: ${this.runtime.imageVisionModelProvider}`
+                `Failed to initialize the local image vision model provider}`
             );
             return false;
         }

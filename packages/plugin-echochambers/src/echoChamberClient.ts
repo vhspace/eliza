@@ -26,7 +26,7 @@ export class EchoChamberClient {
         this.apiUrl = `${config.apiUrl}/api/rooms`;
         this.modelInfo = {
             username: config.username || `agent-${runtime.agentId}`,
-            model: config.model || runtime.modelProvider,
+            model: "Eliza",
         };
     }
 

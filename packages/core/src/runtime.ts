@@ -40,7 +40,6 @@ import {
     // RAGKnowledgeItem,
     //Media,
     ModelClass,
-    ModelProviderName,
     type Plugin,
     type Provider,
     type Service,
@@ -91,11 +90,6 @@ export class AgentRuntime implements IAgentRuntime {
     databaseAdapter: IDatabaseAdapter;
 
     /**
-     * Authentication token used for securing requests.
-     */
-    token: string | null;
-
-    /**
      * Custom actions that the agent can perform.
      */
     actions: Action[] = [];
@@ -111,21 +105,6 @@ export class AgentRuntime implements IAgentRuntime {
     providers: Provider[] = [];
 
     plugins: Plugin[] = [];
-
-    /**
-     * The model to use for generateText.
-     */
-    modelProvider: ModelProviderName;
-
-    /**
-     * The model to use for generateImage.
-     */
-    imageModelProvider: ModelProviderName;
-
-    /**
-     * The model to use for describing images.
-     */
-    imageVisionModelProvider: ModelProviderName;
 
     /**
      * Fetch function to use
@@ -173,6 +152,45 @@ export class AgentRuntime implements IAgentRuntime {
     clients: Record<string, any>;
 
     verifiableInferenceAdapter?: IVerifiableInferenceAdapter;
+
+    functions: Map<string, any[]>;
+
+    async call(
+        name: string,
+        params: any
+    ): Promise<any> {
+        console.log('calling', { name, params });
+        const fns = this.functions.get(name as string);
+        
+        if(!fns || fns.length === 0) {
+            throw new Error('no handler');
+        }
+
+        for(let i = 0; i < fns.length; i++) {
+            const fn = fns[i];
+            try {
+                
+                const result = await fn.handler(this, params);
+                if(result) {
+                    return result;
+                }
+            } catch(e) {
+                elizaLogger.error(`Error in function ${name}`, e);
+                // if more fns available, try next one
+                if(fns.length > i + 1){
+                    console.log("Trying next function");
+                    continue;
+                }
+                throw e;
+            }
+        }
+    }
+
+    registerFunction(fn: any): void {
+        const existingFns = this.functions.get(fn.name) || [];
+        existingFns.push(fn);
+        this.functions.set(fn.name, existingFns);
+      }
 
     registerMemoryManager(manager: IMemoryManager): void {
         if (!manager.tableName) {
@@ -240,14 +258,11 @@ export class AgentRuntime implements IAgentRuntime {
         conversationLength?: number; // number of messages to hold in the recent message cache
         agentId?: UUID; // ID of the agent
         character?: Character; // The character to use for the agent
-        token: string; // JWT token, can be a JWT token if outside worker, or an OpenAI token if inside worker
         serverUrl?: string; // The URL of the worker
         actions?: Action[]; // Optional custom actions
         evaluators?: Evaluator[]; // Optional custom evaluators
         plugins?: Plugin[];
         providers?: Provider[];
-        modelProvider: ModelProviderName;
-
         services?: Service[]; // Map of service name to service instance
         managers?: IMemoryManager[]; // Map of table name to memory manager
         databaseAdapter: IDatabaseAdapter; // The database adapter used for interacting with the database
@@ -257,12 +272,6 @@ export class AgentRuntime implements IAgentRuntime {
         logging?: boolean;
         verifiableInferenceAdapter?: IVerifiableInferenceAdapter;
     }) {
-        elizaLogger.info("Initializing AgentRuntime with options:", {
-            character: opts.character?.name,
-            modelProvider: opts.modelProvider,
-            characterModelProvider: opts.character?.modelProvider,
-        });
-
         elizaLogger.debug(
             `[AgentRuntime] Process working directory: ${process.cwd()}`,
         );
@@ -353,52 +362,10 @@ export class AgentRuntime implements IAgentRuntime {
         this.serverUrl = opts.serverUrl ?? this.serverUrl;
 
         elizaLogger.info("Setting model provider...");
-        elizaLogger.info("Model Provider Selection:", {
-            characterModelProvider: this.character.modelProvider,
-            optsModelProvider: opts.modelProvider,
-            currentModelProvider: this.modelProvider,
-            finalSelection:
-                this.character.modelProvider ??
-                opts.modelProvider ??
-                this.modelProvider,
-        });
-
-        this.modelProvider =
-            this.character.modelProvider ??
-            opts.modelProvider ??
-            this.modelProvider;
-
-        this.imageModelProvider =
-            this.character.imageModelProvider ?? this.modelProvider;
-
-        elizaLogger.info(`Selected model provider: ${this.modelProvider}`);
-
-        elizaLogger.info(
-            `Selected image model provider: ${this.imageModelProvider}`,
-        );
-
-        this.imageVisionModelProvider =
-            this.character.imageVisionModelProvider ?? this.modelProvider;
-
-        elizaLogger.info(
-            `Selected image vision model provider: ${this.imageVisionModelProvider}`,
-        );
-
-        // Validate model provider
-        if (!Object.values(ModelProviderName).includes(this.modelProvider)) {
-            elizaLogger.error("Invalid model provider:", this.modelProvider);
-            elizaLogger.error(
-                "Available providers:",
-                Object.values(ModelProviderName),
-            );
-            throw new Error(`Invalid model provider: ${this.modelProvider}`);
-        }
 
         if (!this.serverUrl) {
             elizaLogger.warn("No serverUrl provided, defaulting to localhost");
         }
-
-        this.token = opts.token;
 
         this.plugins = [
             ...(opts.character?.plugins ?? []),
@@ -1108,7 +1075,6 @@ export class AgentRuntime implements IAgentRuntime {
             runtime: this,
             context,
             modelClass: ModelClass.SMALL,
-            verifiableInferenceAdapter: this.verifiableInferenceAdapter,
         });
 
         const evaluators = parseJsonArrayFromText(

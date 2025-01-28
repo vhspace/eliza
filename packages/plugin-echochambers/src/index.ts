@@ -25,7 +25,7 @@ export const EchoChamberClientInterface: Client = {
                 username:
                     runtime.getSetting("ECHOCHAMBERS_USERNAME") ||
                     `agent-${runtime.agentId}`,
-                model: runtime.modelProvider,
+                model: "Eliza",
                 rooms: runtime
                     .getSetting("ECHOCHAMBERS_ROOMS")
                     ?.split(",")

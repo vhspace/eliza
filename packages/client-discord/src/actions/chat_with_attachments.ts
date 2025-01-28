@@ -184,11 +184,7 @@ const summarizeAction = {
 
         let currentSummary = "";
 
-        const modelSettings = getModelSettings(
-            runtime.character.modelProvider,
-            ModelClass.SMALL
-        );
-        const chunkSize = modelSettings.maxOutputTokens;
+        const chunkSize = 4096;
 
         state.attachmentsWithText = attachmentsWithText;
         state.objective = objective;

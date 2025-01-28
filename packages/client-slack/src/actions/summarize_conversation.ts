@@ -265,11 +265,7 @@ const summarizeAction: Action = {
 
         let currentSummary = "";
 
-        const modelSettings = getModelSettings(
-            runtime.character.modelProvider,
-            ModelClass.SMALL
-        );
-        const chunkSize = modelSettings.maxOutputTokens;
+        const chunkSize = 4096;
 
         const chunks = await splitChunks(formattedMemories, chunkSize, 0);
 

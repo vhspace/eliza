@@ -246,11 +246,8 @@ const summarizeAction = {
 
         let currentSummary = "";
 
-        const modelSettings = getModelSettings(
-            runtime.character.modelProvider,
-            ModelClass.SMALL
-        );
-        const chunkSize = modelSettings.maxOutputTokens - 1000;
+        // TODO: Remove hardcoded chunk size - might need to call a function to get the chunk size
+        const chunkSize = 4096 - 1000;
 
         const chunks = await splitChunks(formattedMemories, chunkSize, 0);
 

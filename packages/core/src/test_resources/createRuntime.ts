@@ -159,10 +159,7 @@ export async function createRuntime({
     }
 
     const runtime = new AgentRuntime({
-        serverUrl: getEndpoint(ModelProviderName.OPENAI),
         conversationLength,
-        token: env!.OPENAI_API_KEY!,
-        modelProvider: ModelProviderName.OPENAI,
         actions: actions ?? [],
         evaluators: evaluators ?? [],
         providers: providers ?? [],

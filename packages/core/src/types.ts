@@ -721,18 +721,6 @@ export type Character = {
     /** Optional system prompt */
     system?: string;
 
-    /** Model provider to use */
-    modelProvider: ModelProviderName;
-
-    /** Image model provider to use, if different from modelProvider */
-    imageModelProvider?: ModelProviderName;
-
-    /** Image Vision model provider to use, if different from modelProvider */
-    imageVisionModelProvider?: ModelProviderName;
-
-    /** Optional model endpoint override */
-    modelEndpointOverride?: string;
-
     /** Optional prompt templates */
     templates?: {
         goalsTemplate?: TemplateType;
@@ -1268,10 +1256,6 @@ export interface IAgentRuntime {
     agentId: UUID;
     serverUrl: string;
     databaseAdapter: IDatabaseAdapter;
-    token: string | null;
-    modelProvider: ModelProviderName;
-    imageModelProvider: ModelProviderName;
-    imageVisionModelProvider: ModelProviderName;
     character: Character;
     providers: Provider[];
     actions: Action[];
@@ -1279,6 +1263,7 @@ export interface IAgentRuntime {
     plugins: Plugin[];
 
     fetch?: typeof fetch | null;
+    call: (name: string, args: any) => Promise<any>;
 
     messageManager: IMemoryManager;
     descriptionManager: IMemoryManager;

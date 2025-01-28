@@ -1,10 +1,10 @@
+// TODO: This plugin will need to be refctored to use runtime.on for generateText event
 import {
     type IVerifiableInferenceAdapter,
     type VerifiableInferenceOptions,
     type VerifiableInferenceResult,
     VerifiableInferenceProvider,
     ModelProviderName,
-    models,
     elizaLogger,
 } from "@elizaos/core";
 import {generateProof, verifyProof} from "../util/primusUtil.ts";
@@ -13,8 +13,6 @@ interface PrimusOptions {
     appId: string;
     appSecret: string;
     attMode: string;
-    modelProvider?: ModelProviderName;
-    token?: string;
 }
 
 export class PrimusAdapter implements IVerifiableInferenceAdapter {
@@ -29,31 +27,33 @@ export class PrimusAdapter implements IVerifiableInferenceAdapter {
         modelClass: string,
         options?: VerifiableInferenceOptions
     ): Promise<VerifiableInferenceResult> {
-        const provider = this.options.modelProvider || ModelProviderName.OPENAI;
-        const baseEndpoint = options?.endpoint || models[provider].endpoint;
-        const model = models[provider].model[modelClass];
-        const apiKey = this.options.token;
+        // TODO: This may need to be rewritten as an event
 
-        if (!apiKey) {
-            throw new Error(
-                `API key (token) is required for provider: ${provider}`
-            );
-        }
+        // const provider = this.options.modelProvider || ModelProviderName.OPENAI;
+        // const baseEndpoint = options?.endpoint || models[provider].endpoint;
+        // const model = models[provider].model[modelClass];
+        // const apiKey = this.options.token;
+
+        // if (!apiKey) {
+        //     throw new Error(
+        //         `API key (token) is required for provider: ${provider}`
+        //     );
+        // }
 
         // Get provider-specific endpoint, auth header and response json path
         let endpoint;
         let authHeader;
         let responseParsePath;
 
-        switch (provider) {
-            case ModelProviderName.OPENAI:
-                endpoint = `${baseEndpoint}/chat/completions`;
-                authHeader = `Bearer ${apiKey}`;
-                responseParsePath = "$.choices[0].message.content";
-                break;
-            default:
-                throw new Error(`Unsupported model provider: ${provider}`);
-        }
+        // switch (provider) {
+        //     case ModelProviderName.OPENAI:
+        //         endpoint = `${baseEndpoint}/chat/completions`;
+        //         authHeader = `Bearer ${apiKey}`;
+        //         responseParsePath = "$.choices[0].message.content";
+        //         break;
+        //     default:
+        //         throw new Error(`Unsupported model provider: ${provider}`);
+        // }
 
 
         const headers = {
@@ -63,11 +63,11 @@ export class PrimusAdapter implements IVerifiableInferenceAdapter {
 
         try {
             const body = {
-                model: model.name,
+                // model: model.name,
                 messages: [{ role: "user", content: context }],
                 temperature:
-                    options?.providerOptions?.temperature ||
-                    models[provider].model[modelClass].temperature,
+                    options?.providerOptions?.temperature
+                    // models[provider].model[modelClass].temperature,
             };
             const attestation = await generateProof(endpoint,"POST",headers,JSON.stringify(body),responseParsePath);
             elizaLogger.log(`model attestation:`, attestation);

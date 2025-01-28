@@ -1,7 +1,20 @@
 import path from "node:path";
 import { fileURLToPath } from "url";
 import { FlagEmbedding, EmbeddingModel } from "fastembed";
-import elizaLogger from "./logger";
+import elizaLogger from "@elizaos/core/src/logger";
+
+async function getLocalEmbedding(input: string): Promise<number[]> {
+    elizaLogger.debug("DEBUG - Inside getLocalEmbedding function");
+
+    try {
+        const embeddingManager = LocalEmbeddingModelManager.getInstance();
+        return await embeddingManager.generateEmbedding(input);
+    } catch (error) {
+        elizaLogger.error("Local embedding failed:", error);
+        throw error;
+    }
+// }
+}
 
 class LocalEmbeddingModelManager {
     private static instance: LocalEmbeddingModelManager | null;

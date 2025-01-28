@@ -26,7 +26,7 @@ export interface EchoChamberConfig {
     apiKey: string; // Required API key for authenticated endpoints
     rooms: string[]; // list of rooms to listen on startup
     username?: string; // Optional custom username (defaults to agent-{agentId})
-    model?: string; // Optional model name (defaults to runtime.modelProvider)
+    model?: string; // Optional model name (defaults to "Eliza")
 }
 
 export interface ListRoomsResponse {
