@@ -72,8 +72,6 @@ WALLET_SECRET_SALT=your_salt  # Only if TEE_MODE is enabled
 ```
 
 ## Dependencies
-
-- @coral-xyz/anchor: 0.30.1
 - @solana/spl-token: 0.4.9
 - @solana/web3.js: 1.95.8
 - solana-agent-kit: ^1.2.0

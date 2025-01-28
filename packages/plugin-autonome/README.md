@@ -77,8 +77,6 @@ Parameters:
 - `config`: Agent configuration in JSON format
 
 ## Dependencies
-
-- @coral-xyz/anchor: 0.30.1
 - @elizaos/plugin-tee: workspace:*
 - @elizaos/plugin-trustdb: workspace:*
 - axios: ^1.7.9
