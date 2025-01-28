@@ -960,40 +960,6 @@ V1 settings
  
 // old generateText code
 
-// elizaLogger.info("Generating text with options:", {
-//     modelProvider: runtime.modelProvider,
-//     model: modelClass,
-//     verifiableInference,
-// });
-// elizaLogger.log("Using provider:", runtime.modelProvider);
-// // If verifiable inference is requested and adapter is provided, use it
-// if (verifiableInference && runtime.verifiableInferenceAdapter) {
-//     elizaLogger.log(
-//         "Using verifiable inference adapter:",
-//         runtime.verifiableInferenceAdapter
-//     );
-//     try {
-//         const result: VerifiableInferenceResult =
-//             await runtime.verifiableInferenceAdapter.generateText(
-//                 context,
-//                 modelClass,
-//                 verifiableInferenceOptions
-//             );
-//         elizaLogger.log("Verifiable inference result:", result);
-//         // Verify the proof
-//         const isValid =
-//             await runtime.verifiableInferenceAdapter.verifyProof(result);
-//         if (!isValid) {
-//             throw new Error("Failed to verify inference proof");
-//         }
-
-//         return result.text;
-//     } catch (error) {
-//         elizaLogger.error("Error in verifiable inference:", error);
-//         throw error;
-//     }
-// }
-
 // const provider = runtime.modelProvider;
 // elizaLogger.debug("Provider settings:", {
 //     provider,

@@ -35,7 +35,6 @@ import {
     type IDatabaseAdapter,
     type IMemoryManager,
     type IRAGKnowledgeManager,
-    type IVerifiableInferenceAdapter,
     type KnowledgeItem,
     // RAGKnowledgeItem,
     //Media,
@@ -150,9 +149,6 @@ export class AgentRuntime implements IAgentRuntime {
     memoryManagers: Map<string, IMemoryManager> = new Map();
     cacheManager: ICacheManager;
     clients: Record<string, any>;
-
-    verifiableInferenceAdapter?: IVerifiableInferenceAdapter;
-
     functions: Map<string, any[]>;
 
     async call(
@@ -270,7 +266,6 @@ export class AgentRuntime implements IAgentRuntime {
         speechModelPath?: string;
         cacheManager: ICacheManager;
         logging?: boolean;
-        verifiableInferenceAdapter?: IVerifiableInferenceAdapter;
     }) {
         elizaLogger.debug(
             `[AgentRuntime] Process working directory: ${process.cwd()}`,
@@ -1716,14 +1711,6 @@ Text: ${attachment.text}
             recentMessagesData,
             attachments: formattedAttachments,
         } as State;
-    }
-
-    getVerifiableInferenceAdapter(): IVerifiableInferenceAdapter | undefined {
-        return this.verifiableInferenceAdapter;
-    }
-
-    setVerifiableInferenceAdapter(adapter: IVerifiableInferenceAdapter): void {
-        this.verifiableInferenceAdapter = adapter;
     }
 }
 

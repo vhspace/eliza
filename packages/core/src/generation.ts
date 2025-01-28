@@ -33,7 +33,6 @@ import {
     parseShouldRespondFromText,
     parseActionResponseFromText,
 } from "./parsing.ts";
-import settings from "./settings.ts";
 import {
     type Content,
     type IAgentRuntime,
@@ -43,10 +42,6 @@ import {
     ModelProviderName,
     ServiceType,
     type ActionResponse,
-    type IVerifiableInferenceAdapter,
-    type VerifiableInferenceOptions,
-    type VerifiableInferenceResult,
-    //VerifiableInferenceProvider,
     type TelemetrySettings,
     TokenizerType,
 } from "./types.ts";
@@ -1111,9 +1106,6 @@ export interface GenerationOptions {
     stop?: string[];
     mode?: "auto" | "json" | "tool";
     experimental_providerMetadata?: Record<string, unknown>;
-    verifiableInference?: boolean;
-    verifiableInferenceAdapter?: IVerifiableInferenceAdapter;
-    verifiableInferenceOptions?: VerifiableInferenceOptions;
 }
 
 /**
@@ -1219,9 +1211,6 @@ interface ProviderOptions {
     modelOptions: ModelSettings;
     modelClass: ModelClass;
     context: string;
-    verifiableInference?: boolean;
-    verifiableInferenceAdapter?: IVerifiableInferenceAdapter;
-    verifiableInferenceOptions?: VerifiableInferenceOptions;
 }
 
 /**
