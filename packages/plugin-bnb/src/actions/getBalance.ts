@@ -1,7 +1,7 @@
 import {
     composeContext,
     elizaLogger,
-    generateObjectDeprecated,
+    generateObject,
     HandlerCallback,
     ModelClass,
     type IAgentRuntime,
@@ -154,7 +154,7 @@ export const getBalanceAction = {
             state,
             template: getBalanceTemplate,
         });
-        const content = await generateObjectDeprecated({
+        const content = await generateObject({
             runtime,
             context: getBalanceContext,
             modelClass: ModelClass.LARGE,

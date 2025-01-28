@@ -2,7 +2,7 @@ import {
     composeContext,
     type Content,
     elizaLogger,
-    generateObjectDeprecated,
+    generateObject,
     type HandlerCallback,
     type IAgentRuntime,
     type Memory,
@@ -105,7 +105,7 @@ export default {
             });
 
             elizaLogger.log("Generating content from context...");
-            const content = (await generateObjectDeprecated({
+            const content = (await generateObject({
                 runtime,
                 context: statsContext,
                 modelClass: ModelClass.LARGE,

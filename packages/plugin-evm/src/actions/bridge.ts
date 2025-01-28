@@ -1,7 +1,7 @@
 import type { IAgentRuntime, Memory, State } from "@elizaos/core";
 import {
     composeContext,
-    generateObjectDeprecated,
+    generateObject,
     ModelClass,
 } from "@elizaos/core";
 import {
@@ -105,7 +105,7 @@ export const bridgeAction = {
             state,
             template: bridgeTemplate,
         });
-        const content = await generateObjectDeprecated({
+        const content = await generateObject({
             runtime,
             context: bridgeContext,
             modelClass: ModelClass.LARGE,

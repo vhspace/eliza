@@ -1,7 +1,7 @@
 import type { IAgentRuntime, Memory, State } from "@elizaos/core";
 import {
     composeContext,
-    generateObjectDeprecated,
+    generateObject,
     ModelClass,
     elizaLogger,
 } from "@elizaos/core";
@@ -364,7 +364,7 @@ export const swapAction = {
             state,
             template: swapTemplate,
         });
-        const content = await generateObjectDeprecated({
+        const content = await generateObject({
             runtime,
             context: swapContext,
             modelClass: ModelClass.LARGE,

@@ -1,7 +1,7 @@
 import type { IAgentRuntime, Memory, State } from "@elizaos/core";
 import {
     composeContext,
-    generateObjectDeprecated,
+    generateObject,
     ModelClass,
     elizaLogger,
 } from "@elizaos/core";
@@ -55,7 +55,7 @@ export const createInvoiceAction = {
             state,
             template: createInvoiceTemplate,
         });
-        const content = await generateObjectDeprecated({
+        const content = await generateObject({
             runtime,
             context: createInvoiceContext,
             modelClass: ModelClass.LARGE,

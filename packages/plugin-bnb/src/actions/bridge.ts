@@ -1,7 +1,7 @@
 import {
     composeContext,
     elizaLogger,
-    generateObjectDeprecated,
+    generateObject,
     HandlerCallback,
     ModelClass,
     type IAgentRuntime,
@@ -330,7 +330,7 @@ export const bridgeAction = {
             state,
             template: bridgeTemplate,
         });
-        const content = await generateObjectDeprecated({
+        const content = await generateObject({
             runtime,
             context: bridgeContext,
             modelClass: ModelClass.LARGE,

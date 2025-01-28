@@ -10,7 +10,7 @@ import {
     type Action,
 } from "@elizaos/core";
 import { composeContext } from "@elizaos/core";
-import { generateObjectDeprecated } from "@elizaos/core";
+import { generateObject } from "@elizaos/core";
 
 class TransferValidationError extends Error {
     constructor(message: string) {
@@ -100,7 +100,7 @@ export default {
                 template: transferTemplate,
             });
 
-            const content = await generateObjectDeprecated({
+            const content = await generateObject({
                 runtime,
                 context: transferContext,
                 modelClass: ModelClass.SMALL,

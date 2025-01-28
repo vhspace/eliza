@@ -1,7 +1,7 @@
 import {
     type Action,
     composeContext,
-    generateObjectDeprecated,
+    generateObject,
     type IAgentRuntime,
     ModelClass,
     type State,
@@ -39,7 +39,7 @@ const buildTransferDetails = async (state: State, runtime: IAgentRuntime) => {
         template: transferTemplate,
     });
 
-    const transferDetails = (await generateObjectDeprecated({
+    const transferDetails = (await generateObject({
         runtime,
         context,
         modelClass: ModelClass.SMALL,

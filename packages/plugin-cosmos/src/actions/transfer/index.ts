@@ -1,6 +1,6 @@
 import {
     composeContext,
-    generateObjectDeprecated,
+    generateObject,
     type HandlerCallback,
     type IAgentRuntime,
     type Memory,
@@ -32,7 +32,7 @@ export const createTransferAction = (pluginOptions: ICosmosPluginOptions) => ({
             templatingEngine: "handlebars",
         });
 
-        const cosmosTransferContent = await generateObjectDeprecated({
+        const cosmosTransferContent = await generateObject({
             runtime: _runtime,
             context: cosmosTransferContext,
             modelClass: ModelClass.SMALL,

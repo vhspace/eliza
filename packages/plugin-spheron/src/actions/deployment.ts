@@ -8,7 +8,7 @@ import {
     elizaLogger,
     composeContext,
     ModelClass,
-    generateObjectDeprecated,
+    generateObject,
 } from "@elizaos/core";
 import { validateSpheronConfig } from "../environment.ts";
 import {
@@ -219,7 +219,7 @@ export default {
         });
 
         // Generate deployment content
-        const content = await generateObjectDeprecated({
+        const content = await generateObject({
             runtime,
             context: deploymentContext,
             modelClass: ModelClass.SMALL,

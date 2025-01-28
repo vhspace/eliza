@@ -1,7 +1,7 @@
 import {
     composeContext,
     elizaLogger,
-    generateObjectDeprecated,
+    generateObject,
     type HandlerCallback,
     ModelClass,
     type IAgentRuntime,
@@ -84,7 +84,7 @@ export const getIPDetailsAction = {
         }
 
         // Generate content using template
-        const content = await generateObjectDeprecated({
+        const content = await generateObject({
             runtime,
             context: composeContext({ state: currentState, template: getIPDetailsTemplate }),
             modelClass: ModelClass.SMALL,

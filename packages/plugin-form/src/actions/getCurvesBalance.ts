@@ -2,7 +2,7 @@ import {
     Action,
     composeContext,
     elizaLogger,
-    generateObjectDeprecated,
+    generateObject,
     HandlerCallback,
     ModelClass,
     type IAgentRuntime,
@@ -89,7 +89,7 @@ export const getCurvesBalanceAction: Action = {
         const action = new GetCurvesBalanceAction(wallet);
 
         try {
-            const params = (await generateObjectDeprecated({
+            const params = (await generateObject({
                 runtime,
                 context: composeContext({
                     state,

@@ -2,7 +2,7 @@ import {
     type Action,
     type ActionExample,
     type IAgentRuntime,
-    generateObjectDeprecated,
+    generateObject,
     type Memory,
     type State,
     type HandlerCallback,
@@ -71,7 +71,7 @@ export class TransferAction {
             template: transferTemplate,
         });
 
-        const transferDetails = (await generateObjectDeprecated({
+        const transferDetails = (await generateObject({
             runtime,
             context,
             modelClass: ModelClass.SMALL,

@@ -2,7 +2,7 @@ import {
     Action,
     composeContext,
     elizaLogger,
-    generateObjectDeprecated,
+    generateObject,
     HandlerCallback,
     ModelClass,
     type IAgentRuntime,
@@ -76,7 +76,7 @@ const buildBuyCurvesDetails = async (
         template: buyCurvesTemplate,
     });
 
-    const buyDetails = (await generateObjectDeprecated({
+    const buyDetails = (await generateObject({
         runtime,
         context,
         modelClass: ModelClass.SMALL,

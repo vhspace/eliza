@@ -1,4 +1,4 @@
-import { type IAgentRuntime, ModelClass, Service, ServiceType, elizaLogger, generateObjectDeprecated, generateText } from "@elizaos/core";
+import { type IAgentRuntime, ModelClass, Service, ServiceType, elizaLogger, generateObject, generateText } from "@elizaos/core";
 import { GoPlusManage, type GoPlusParamType, GoPlusType } from "../lib/GoPlusManage";
 import { requestPrompt, responsePrompt } from "../templates";
 
@@ -29,13 +29,13 @@ export class GoplusSecurityService extends Service implements IGoplusSecuritySer
     async check(text: string): Promise<string> {
         try {
             elizaLogger.log("check input text", text);
-            const obj = await generateObjectDeprecated({
+            const obj = await generateObject({
                 runtime: this.runtime,
                 context: requestPrompt(text),
                 modelClass: ModelClass.SMALL, // gpt-4o-mini
             }) as GoPlusParamType;
 
-            elizaLogger.log("check generateObjectDeprecated text", obj);
+            elizaLogger.log("check generateObject text", obj);
 
             const goPlusManage = new GoPlusManage(this.apiKey)
             let checkResult: any;

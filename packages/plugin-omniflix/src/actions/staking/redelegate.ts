@@ -6,7 +6,7 @@ import {
     ModelClass,
     type Memory,
     type State,
-    generateObjectDeprecated,
+    generateObject,
     ActionExample,
     Action,
     IAgentRuntime,
@@ -166,7 +166,7 @@ const buildRedelegateDetails = async (
         template: redelegateTokensTemplate,
     });
 
-    const content = await generateObjectDeprecated({
+    const content = await generateObject({
         runtime,
         context: redelegateContext,
         modelClass: ModelClass.SMALL,

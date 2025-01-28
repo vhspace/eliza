@@ -1,6 +1,6 @@
 import {
     composeContext,
-    generateObjectDeprecated,
+    generateObject,
     type HandlerCallback,
     type IAgentRuntime,
     type Memory,
@@ -38,7 +38,7 @@ export const createIBCTransferAction = (
             templatingEngine: "handlebars",
         });
 
-        const cosmosIBCTransferContent = await generateObjectDeprecated({
+        const cosmosIBCTransferContent = await generateObject({
             runtime: _runtime,
             context: cosmosIBCTransferContext,
             modelClass: ModelClass.SMALL,

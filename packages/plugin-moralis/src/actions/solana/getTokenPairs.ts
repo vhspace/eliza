@@ -2,7 +2,7 @@ import {
     ActionExample,
     composeContext,
     elizaLogger,
-    generateObjectDeprecated,
+    generateObject,
     HandlerCallback,
     IAgentRuntime,
     Memory,
@@ -52,7 +52,7 @@ export default {
             });
 
             elizaLogger.log("Extracting token address...");
-            const content = (await generateObjectDeprecated({
+            const content = (await generateObject({
                 runtime,
                 context: pairsContext,
                 modelClass: ModelClass.LARGE,

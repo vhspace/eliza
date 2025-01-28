@@ -1,7 +1,7 @@
 import { type ByteArray, formatEther, parseEther, type Hex } from "viem";
 import {
     composeContext,
-    generateObjectDeprecated,
+    generateObject,
     type HandlerCallback,
     ModelClass,
     type IAgentRuntime,
@@ -82,7 +82,7 @@ const buildTransferDetails = async (
         chains.map((item) => `"${item}"`).join("|")
     );
 
-    const transferDetails = (await generateObjectDeprecated({
+    const transferDetails = (await generateObject({
         runtime,
         context: contextWithChains,
         modelClass: ModelClass.SMALL,

@@ -17,7 +17,7 @@ import {
     type Action,
 } from "@elizaos/core";
 import { composeContext } from "@elizaos/core";
-import { generateObjectDeprecated } from "@elizaos/core";
+import { generateObject } from "@elizaos/core";
 import { ACTIONS } from "solana-agent-kit";
 import { getSAK } from "../client";
 
@@ -111,7 +111,7 @@ export default {
         });
 
         // Generate transfer content
-        const content = await generateObjectDeprecated({
+        const content = await generateObject({
             runtime,
             context: transferContext,
             modelClass: ModelClass.LARGE,

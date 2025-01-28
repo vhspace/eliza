@@ -18,7 +18,7 @@ import {
 } from "@elizaos/core";
 import { composeContext } from "@elizaos/core";
 import { getWalletKey } from "../keypairUtils";
-import { generateObjectDeprecated } from "@elizaos/core";
+import { generateObject } from "@elizaos/core";
 
 interface SolTransferContent extends Content {
     recipient: string;
@@ -80,7 +80,7 @@ export default {
             template: solTransferTemplate,
         });
 
-        const content = await generateObjectDeprecated({
+        const content = await generateObject({
             runtime,
             context: transferContext,
             modelClass: ModelClass.LARGE,

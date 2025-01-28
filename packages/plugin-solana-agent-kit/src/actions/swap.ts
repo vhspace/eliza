@@ -1,7 +1,7 @@
 import {
     type ActionExample,
     composeContext,
-    generateObjectDeprecated,
+    generateObject,
     type HandlerCallback,
     type IAgentRuntime,
     type Memory,
@@ -85,7 +85,7 @@ export default {
             template: swapTemplate,
         });
 
-        const response = await generateObjectDeprecated({
+        const response = await generateObject({
             runtime,
             context: swapContext,
             modelClass: ModelClass.LARGE,

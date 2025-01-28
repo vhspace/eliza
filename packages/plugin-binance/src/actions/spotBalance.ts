@@ -2,7 +2,7 @@ import {
     type ActionExample,
     composeContext,
     elizaLogger,
-    generateObjectDeprecated,
+    generateObject,
     type HandlerCallback,
     type IAgentRuntime,
     type Memory,
@@ -69,7 +69,7 @@ export const spotBalance: Action = {
             template: spotBalanceTemplate,
         });
 
-        const content = (await generateObjectDeprecated({
+        const content = (await generateObject({
             runtime,
             context: balanceContext,
             modelClass: ModelClass.SMALL,

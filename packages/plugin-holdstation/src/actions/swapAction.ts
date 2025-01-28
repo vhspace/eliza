@@ -8,7 +8,7 @@ import {
     ModelClass,
     elizaLogger,
     ActionExample,
-    generateObjectDeprecated,
+    generateObject,
 } from "@elizaos/core";
 
 import { swapTemplate } from "../templates";
@@ -168,7 +168,7 @@ export const swapAction: Action = {
         });
 
         // generate swap content
-        const content = await generateObjectDeprecated({
+        const content = await generateObject({
             runtime,
             context: swapContext,
             modelClass: ModelClass.SMALL,

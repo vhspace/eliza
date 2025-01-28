@@ -2,7 +2,7 @@ import {
     type Action,
     type ActionExample,
     type IAgentRuntime,
-    generateObjectDeprecated,
+    generateObject,
     type Memory,
     type State,
     type HandlerCallback,
@@ -59,7 +59,7 @@ export class WithdrawAction {
             template: withdrawTemplate,
         });
 
-        const withdrawDetails = (await generateObjectDeprecated({
+        const withdrawDetails = (await generateObject({
             runtime,
             context,
             modelClass: ModelClass.SMALL,

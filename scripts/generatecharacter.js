@@ -259,7 +259,6 @@ const newData = {
     name: agentName,
     system: systemPromptOneLine,
     /*
-    modelProvider: "",
     clients: [""],
     plugins: [""],
     settings: {

@@ -2,7 +2,7 @@ import {
     Action,
     composeContext,
     elizaLogger,
-    generateObjectDeprecated,
+    generateObject,
     HandlerCallback,
     ModelClass,
     type IAgentRuntime,
@@ -98,7 +98,7 @@ export const depositCurvesTokenAction: Action = {
         const action = new DepositCurvesTokenAction(wallet);
 
         try {
-            const depositParams = (await generateObjectDeprecated({
+            const depositParams = (await generateObject({
                 runtime,
                 context: composeContext({
                     state,

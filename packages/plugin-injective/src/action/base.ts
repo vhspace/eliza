@@ -9,7 +9,7 @@ import {
     elizaLogger,
     composeContext,
     type Action,
-    generateObjectDeprecated,
+    generateObject,
     generateText,
 } from "@elizaos/core";
 import { InjectiveGrpcClient } from "@injective/modules";
@@ -75,7 +75,7 @@ export function createGenericAction({
             });
 
             // 3. Use the AI model to generate content based on the context
-            const params = await generateObjectDeprecated({
+            const params = await generateObject({
                 runtime,
                 context,
                 modelClass: ModelClass.LARGE,

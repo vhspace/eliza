@@ -2,7 +2,7 @@ import {
     Action,
     composeContext,
     elizaLogger,
-    generateObjectDeprecated,
+    generateObject,
     HandlerCallback,
     ModelClass,
     type IAgentRuntime,
@@ -95,7 +95,7 @@ export const withdrawCurvesTokenAction: Action = {
 
         try {
             // First determine the formula being used
-            const withdrawParams = (await generateObjectDeprecated({
+            const withdrawParams = (await generateObject({
                 runtime,
                 context: composeContext({
                     state,

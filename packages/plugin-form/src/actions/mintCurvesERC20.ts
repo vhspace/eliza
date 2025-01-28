@@ -2,7 +2,7 @@ import {
     Action,
     composeContext,
     elizaLogger,
-    generateObjectDeprecated,
+    generateObject,
     HandlerCallback,
     ModelClass,
     type IAgentRuntime,
@@ -92,7 +92,7 @@ export const mintCurvesERC20TokenAction: Action = {
         const action = new MintCurvesERC20TokenAction(wallet);
 
         try {
-            const mintParams = (await generateObjectDeprecated({
+            const mintParams = (await generateObject({
                 runtime,
                 context: composeContext({
                     state,

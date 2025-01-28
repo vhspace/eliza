@@ -7,7 +7,7 @@ import {
     type HandlerCallback,
     composeContext,
     elizaLogger,
-    generateObjectDeprecated,
+    generateObject,
     ModelClass,
 } from "@elizaos/core";
 import { Hyperliquid } from "hyperliquid";
@@ -37,7 +37,7 @@ export const priceCheck: Action = {
                 template: priceCheckTemplate,
             });
 
-            const content = await generateObjectDeprecated({
+            const content = await generateObject({
                 runtime,
                 context,
                 modelClass: ModelClass.SMALL,

@@ -6,7 +6,7 @@ import {
     ModelClass,
     type Memory,
     type State,
-    generateObjectDeprecated,
+    generateObject,
     ActionExample,
     Action,
     IAgentRuntime,
@@ -152,7 +152,7 @@ const buildCancelUnbondingContent = async (
         template: cancelUnbondingTemplate,
     });
 
-    const content = await generateObjectDeprecated({
+    const content = await generateObject({
         runtime,
         context: cancelUnbondingContext,
         modelClass: ModelClass.SMALL,

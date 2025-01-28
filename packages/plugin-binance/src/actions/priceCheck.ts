@@ -2,7 +2,7 @@ import {
     type ActionExample,
     composeContext,
     elizaLogger,
-    generateObjectDeprecated,
+    generateObject,
     type HandlerCallback,
     type IAgentRuntime,
     type Memory,
@@ -61,7 +61,7 @@ export const priceCheck: Action = {
                 template: priceCheckTemplate,
             });
 
-            const rawContent = await generateObjectDeprecated({
+            const rawContent = await generateObject({
                 runtime,
                 context,
                 modelClass: ModelClass.SMALL,

@@ -2,7 +2,7 @@ import {
     type Action,
     type ActionExample,
     type IAgentRuntime,
-    generateObjectDeprecated,
+    generateObject,
     type Memory,
     type State,
     type HandlerCallback,
@@ -60,7 +60,7 @@ export class StakeAction {
             template: stakeTemplate,
         });
 
-        const stakeDetails = (await generateObjectDeprecated({
+        const stakeDetails = (await generateObject({
             runtime,
             context,
             modelClass: ModelClass.SMALL,

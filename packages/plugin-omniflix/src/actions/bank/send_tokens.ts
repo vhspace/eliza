@@ -6,7 +6,7 @@ import {
     ModelClass,
     type Memory,
     type State,
-    generateObjectDeprecated,
+    generateObject,
     ActionExample,
     Action,
     IAgentRuntime,
@@ -146,7 +146,7 @@ const buildTransferDetails = async (
         template: sendTokensTemplate,
     });
 
-    const content = await generateObjectDeprecated({
+    const content = await generateObject({
         runtime,
         context: transferContext,
         modelClass: ModelClass.SMALL,

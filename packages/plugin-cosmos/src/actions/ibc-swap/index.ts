@@ -1,6 +1,6 @@
 import {
     composeContext,
-    generateObjectDeprecated,
+    generateObject,
     HandlerCallback,
     IAgentRuntime,
     Memory,
@@ -34,7 +34,7 @@ export const createIBCSwapAction = (pluginOptions: ICosmosPluginOptions) => ({
             templatingEngine: "handlebars",
         });
 
-        const cosmosIBCSwapContent = await generateObjectDeprecated({
+        const cosmosIBCSwapContent = await generateObject({
             runtime: _runtime,
             context: cosmosIBCSwapContext,
             modelClass: ModelClass.SMALL,

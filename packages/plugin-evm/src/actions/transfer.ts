@@ -2,7 +2,7 @@ import { type ByteArray, formatEther, parseEther, type Hex } from "viem";
 import {
     type Action,
     composeContext,
-    generateObjectDeprecated,
+    generateObject,
     type HandlerCallback,
     ModelClass,
     type IAgentRuntime,
@@ -79,7 +79,7 @@ const buildTransferDetails = async (
         template: transferTemplate,
     });
 
-    const transferDetails = (await generateObjectDeprecated({
+    const transferDetails = (await generateObject({
         runtime,
         context,
         modelClass: ModelClass.SMALL,

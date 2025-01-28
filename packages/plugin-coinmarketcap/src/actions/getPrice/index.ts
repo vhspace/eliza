@@ -1,7 +1,7 @@
 import {
     composeContext,
     elizaLogger,
-    generateObjectDeprecated,
+    generateObject,
     type HandlerCallback,
     type IAgentRuntime,
     type Memory,
@@ -55,7 +55,7 @@ export default {
                 template: getPriceTemplate,
             });
 
-            const content = (await generateObjectDeprecated({
+            const content = (await generateObject({
                 runtime,
                 context: priceContext,
                 modelClass: ModelClass.SMALL,

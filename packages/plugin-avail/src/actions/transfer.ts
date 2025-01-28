@@ -9,7 +9,7 @@ import {
     type Action,
     elizaLogger,
     composeContext,
-    generateObjectDeprecated,
+    generateObject,
 } from "@elizaos/core";
 import { validateAvailConfig } from "../environment";
 import {
@@ -105,7 +105,7 @@ export default {
         });
 
         // Generate transfer content
-        const content = await generateObjectDeprecated({
+        const content = await generateObject({
             runtime,
             context: transferContext,
             modelClass: ModelClass.SMALL,

@@ -1,7 +1,7 @@
 import {
     composeContext,
     elizaLogger,
-    generateObjectDeprecated,
+    generateObject,
     type HandlerCallback,
     type IAgentRuntime,
     type Memory,
@@ -60,7 +60,7 @@ export const xChainSwapAction = {
         });
 
         // Generate X chain swap content
-        const content = await generateObjectDeprecated({
+        const content = await generateObject({
             runtime,
             context: xChainSwapContext,
             modelClass: ModelClass.SMALL,

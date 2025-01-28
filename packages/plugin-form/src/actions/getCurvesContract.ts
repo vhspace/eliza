@@ -2,7 +2,7 @@ import {
     Action,
     composeContext,
     elizaLogger,
-    generateObjectDeprecated,
+    generateObject,
     HandlerCallback,
     ModelClass,
     type IAgentRuntime,
@@ -50,7 +50,7 @@ const buildGetCurvesAddressDetails = async (
         template: getCurvesFormulaTemplate,
     });
 
-    return (await generateObjectDeprecated({
+    return (await generateObject({
         runtime,
         context,
         modelClass: ModelClass.SMALL,
