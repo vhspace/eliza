@@ -616,6 +616,18 @@ export async function initializeClients(
 }
 
 function getSecret(character: Character, secret: string) {
+    // Special handling for EigenDA secrets
+    if (secret === "EIGENDA_PRIVATE_KEY") {
+        return character.settings?.secrets?.EIGENDA_PRIVATE_KEY ||
+               character.settings?.secrets?.EVM_PRIVATE_KEY ||
+               process.env.EIGENDA_PRIVATE_KEY ||
+               process.env.EVM_PRIVATE_KEY;
+    }
+    if (secret === "BASE_RPC_URL") {
+        return character.settings?.secrets?.BASE_RPC_URL ||
+               process.env.BASE_RPC_URL ||
+               "https://base.drpc.org";
+    }
     return character.settings?.secrets?.[secret] || process.env[secret];
 }
 
@@ -679,6 +691,7 @@ export async function createAgent(
             opacityProverUrl: process.env.OPACITY_PROVER_URL,
             modelProvider: character.modelProvider,
             token: token,
+            eigenDAPrivateKey: process.env.EIGENDA_PRIVATE_KEY,
         });
         elizaLogger.log("Verifiable inference adapter initialized");
         elizaLogger.log("teamId", process.env.OPACITY_TEAM_ID);

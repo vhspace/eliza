@@ -38,9 +38,9 @@ export async function validateEigenDAConfig(
 }
 
 // Default configuration values
-export const DEFAULT_API_URL = "http://3.220.4.143:5000";
+export const DEFAULT_API_URL = "http://test-agent-proxy-api.eigenda.xyz";
 export const MAX_STATUS_CHECKS = 60;
 export const STATUS_CHECK_INTERVAL = 10;
 export const INITIAL_RETRIEVAL_DELAY = 300;
 export const DEFAULT_CREDITS_CONTRACT_ADDRESS = "0x0CC001F1bDe9cd129092d4d24D935DB985Ce42A9";
-export const DEFAULT_RPC_URL = "https://base.drpc.org";
+export const DEFAULT_RPC_URL = "https://mainnet.base.org";
