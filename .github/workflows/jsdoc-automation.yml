@@ -75,11 +75,11 @@ jobs:
                   git push || echo "No changes to push"
 
             - name: Install root dependencies
-              run: pnpm install --no-frozen-lockfile
+              run: pnpm install --frozen-lockfile
 
             - name: Install package dependencies
               working-directory: scripts/jsdoc-automation
-              run: pnpm install --no-frozen-lockfile
+              run: pnpm install --frozen-lockfile
 
             - name: Build TypeScript
               working-directory: scripts/jsdoc-automation
