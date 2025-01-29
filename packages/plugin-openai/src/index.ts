@@ -1,10 +1,12 @@
-import type { Plugin } from "@elizaos/core";
+import { Plugin, ModelProviderName } from "@elizaos/core";
 import { generateTextAction } from "./actions/generateTextAction";
 import { generateEmbeddingAction } from "./actions/generateEmbeddingAction";
 import { analyzeSentimentAction } from "./actions/analyzeSentimentAction";
 import { transcribeAudioAction } from "./actions/transcribeAudioAction";
 import { moderateContentAction } from "./actions/moderateContentAction";
 import { editTextAction } from "./actions/editTextAction";
+import { OpenAIEmbeddingProvider } from "./services/embeddingService";
+import { EmbeddingRegistry } from "@elizaos/core";
 
 // Simple terminal output
 console.log("\n===============================");
@@ -23,6 +25,11 @@ console.log("  - moderateContentAction");
 console.log("  - editTextAction");
 console.log("===============================\n");
 
+const openAIProvider = new OpenAIEmbeddingProvider();
+
+// Register the provider
+EmbeddingRegistry.registerProvider(ModelProviderName.OPENAI, openAIProvider);
+
 export const openaiPlugin: Plugin = {
     name: "openai",
     description: "OpenAI integration plugin for various AI capabilities",
@@ -34,8 +41,11 @@ export const openaiPlugin: Plugin = {
         moderateContentAction,
         editTextAction,
     ],
+    providers: [{
+        type: "embedding",
+        provider: openAIProvider
+    }],
     evaluators: [],
-    providers: [],
 };
 
 export default openaiPlugin;
