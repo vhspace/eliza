@@ -1267,6 +1267,7 @@ export abstract class Service {
     abstract initialize(runtime: IAgentRuntime): Promise<void>;
 }
 
+
 export interface IAgentRuntime {
     // Properties
     agentId: UUID;
@@ -1283,6 +1284,8 @@ export interface IAgentRuntime {
     plugins: Plugin[];
 
     fetch?: typeof fetch | null;
+
+    call?: (name: string, args: any) => Promise<any>;
 
     messageManager: IMemoryManager;
     descriptionManager: IMemoryManager;
@@ -1665,4 +1668,17 @@ export interface DirectoryItem {
 export interface ChunkRow {
     id: string;
     // Add other properties if needed
+}
+
+export interface EmbeddingProvider {
+    generateEmbedding(input: string): Promise<number[]>;
+    initialize(): Promise<void>;
+    reset?(): Promise<void>;
+    getZeroVector?():number[];
+}
+
+export interface EmbeddingConfig {
+    provider: EmbeddingProvider;
+    dimensions?: number;
+    // other common config options
 }

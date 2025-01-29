@@ -3,7 +3,10 @@ import { fileURLToPath } from "url";
 import { FlagEmbedding, EmbeddingModel } from "fastembed";
 import elizaLogger from "./logger";
 
-class LocalEmbeddingModelManager {
+/**
+ * @deprecated Use EmbeddingManager with a specific provider plugin instead
+ */
+export class LocalEmbeddingModelManager {
     private static instance: LocalEmbeddingModelManager | null;
     private model: FlagEmbedding | null = null;
     private initPromise: Promise<void> | null = null;

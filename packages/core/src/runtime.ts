@@ -52,6 +52,8 @@ import {
     type Evaluator,
     type Memory,
     type DirectoryItem,
+    type EmbeddingConfig,
+    type EmbeddingManager,
 } from "./types.ts";
 import { stringToUuid } from "./uuid.ts";
 import { glob } from "glob";
@@ -171,6 +173,47 @@ export class AgentRuntime implements IAgentRuntime {
     memoryManagers: Map<string, IMemoryManager> = new Map();
     cacheManager: ICacheManager;
     clients: Record<string, any>;
+
+    functions: Map<string, any[]>;
+
+    private embeddingManager?: EmbeddingManager;
+
+    async call(
+        name: string,
+        params: any
+    ): Promise<any> {
+        console.log('calling', { name, params });
+        const fns = this.functions.get(name as string);
+
+        if(!fns || fns.length === 0) {
+            throw new Error('no handler');
+        }
+
+        for(let i = 0; i < fns.length; i++) {
+            const fn = fns[i];
+            try {
+
+                const result = await fn.handler(this, params);
+                if(result) {
+                    return result;
+                }
+            } catch(e) {
+                elizaLogger.error(`Error in function ${name}`, e);
+                // if more fns available, try next one
+                if(fns.length > i + 1){
+                    console.log("Trying next function");
+                    continue;
+                }
+                throw e;
+            }
+        }
+    }
+
+    registerFunction(fn: any): void {
+        const existingFns = this.functions.get(fn.name) || [];
+        existingFns.push(fn);
+        this.functions.set(fn.name, existingFns);
+      }
 
     verifiableInferenceAdapter?: IVerifiableInferenceAdapter;
 
@@ -1758,6 +1801,11 @@ Text: ${attachment.text}
 
     setVerifiableInferenceAdapter(adapter: IVerifiableInferenceAdapter): void {
         this.verifiableInferenceAdapter = adapter;
+    }
+
+    async initializeEmbeddings(config: EmbeddingConfig) {
+        this.embeddingManager = new EmbeddingManager(config);
+        await this.embeddingManager.provider.initialize();
     }
 }
 

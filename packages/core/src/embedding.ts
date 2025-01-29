@@ -3,6 +3,8 @@ import { type IAgentRuntime, ModelProviderName } from "./types.ts";
 import settings from "./settings.ts";
 import elizaLogger from "./logger.ts";
 import LocalEmbeddingModelManager from "./localembeddingManager.ts";
+import type { EmbeddingProvider as IEmbeddingProvider, EmbeddingConfig, EmbeddingProvider } from "./types";
+import { EmbeddingRegistry } from "./services/embeddingRegistry";
 
 interface EmbeddingOptions {
     model: string;
@@ -14,7 +16,7 @@ interface EmbeddingOptions {
     provider?: string;
 }
 
-export const EmbeddingProvider = {
+export const EmbeddingProviderType = {
     OpenAI: "OpenAI",
     Ollama: "Ollama",
     GaiaNet: "GaiaNet",
@@ -23,15 +25,15 @@ export const EmbeddingProvider = {
 } as const;
 
 export type EmbeddingProviderType =
-    (typeof EmbeddingProvider)[keyof typeof EmbeddingProvider];
+    (typeof EmbeddingProviderType)[keyof typeof EmbeddingProviderType];
 
-export type EmbeddingConfig = {
+export type LocalEmbeddingConfig = {
     readonly dimensions: number;
     readonly model: string;
     readonly provider: EmbeddingProviderType;
 };
 
-export const getEmbeddingConfig = (): EmbeddingConfig => ({
+export const getEmbeddingConfig = (): LocalEmbeddingConfig => ({
     dimensions:
         settings.USE_OPENAI_EMBEDDING?.toLowerCase() === "true"
             ? getEmbeddingModelSettings(ModelProviderName.OPENAI).dimensions
@@ -208,7 +210,7 @@ export async function embed(runtime: IAgentRuntime, input: string) {
     const isNode = typeof process !== "undefined" && process.versions?.node;
 
     // Determine which embedding path to use
-    if (config.provider === EmbeddingProvider.OpenAI) {
+    if (config.provider === EmbeddingProviderType.OpenAI) {
         return await getRemoteEmbedding(input, {
             model: config.model,
             endpoint: settings.OPENAI_API_URL || "https://api.openai.com/v1",
@@ -217,7 +219,7 @@ export async function embed(runtime: IAgentRuntime, input: string) {
         });
     }
 
-    if (config.provider === EmbeddingProvider.Ollama) {
+    if (config.provider === EmbeddingProviderType.Ollama) {
         return await getRemoteEmbedding(input, {
             model: config.model,
             endpoint:
@@ -228,7 +230,7 @@ export async function embed(runtime: IAgentRuntime, input: string) {
         });
     }
 
-    if (config.provider == EmbeddingProvider.GaiaNet) {
+    if (config.provider == EmbeddingProviderType.GaiaNet) {
         return await getRemoteEmbedding(input, {
             model: config.model,
             endpoint:
@@ -242,7 +244,7 @@ export async function embed(runtime: IAgentRuntime, input: string) {
         });
     }
 
-    if (config.provider === EmbeddingProvider.Heurist) {
+    if (config.provider === EmbeddingProviderType.Heurist) {
         return await getRemoteEmbedding(input, {
             model: config.model,
             endpoint: getEndpoint(ModelProviderName.HEURIST),
@@ -302,3 +304,39 @@ export async function embed(runtime: IAgentRuntime, input: string) {
         return null;
     }
 }
+
+export class EmbeddingManager {
+    private provider: EmbeddingProvider;
+
+    constructor(runtime: IAgentRuntime) {
+        const providerType = runtime.character.modelProvider;
+        const provider = EmbeddingRegistry.getProvider(providerType);
+
+        if (!provider) {
+            throw new Error(`No embedding provider registered for ${providerType}`);
+        }
+
+        this.provider = provider;
+    }
+
+    async generateEmbedding(input: string): Promise<number[]> {
+        if (!input || typeof input !== "string" || input.trim().length === 0) {
+            elizaLogger.warn("Invalid embedding input");
+            return this.getZeroVector();
+        }
+
+        try {
+            return await this.provider.generateEmbedding(input);
+        } catch (error) {
+            elizaLogger.error("Embedding generation failed:", error);
+            return this.getZeroVector();
+        }
+    }
+
+    getZeroVector(): number[] {
+        return this.provider.getZeroVector();
+    }
+}
+
+// Export types needed by plugins
+export type { EmbeddingProvider, EmbeddingConfig };
