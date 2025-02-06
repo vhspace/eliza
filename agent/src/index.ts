@@ -84,18 +84,20 @@ import { coinmarketcapPlugin } from "@elizaos/plugin-coinmarketcap";
 import { confluxPlugin } from "@elizaos/plugin-conflux";
 import { createCosmosPlugin } from "@elizaos/plugin-cosmos";
 import { cronosZkEVMPlugin } from "@elizaos/plugin-cronoszkevm";
+import { deskExchangePlugin } from "@elizaos/plugin-desk-exchange";
 import { evmPlugin } from "@elizaos/plugin-evm";
+import { edwinPlugin } from "@elizaos/plugin-edwin";
 import { flowPlugin } from "@elizaos/plugin-flow";
 import { fuelPlugin } from "@elizaos/plugin-fuel";
 import { genLayerPlugin } from "@elizaos/plugin-genlayer";
 import { gitcoinPassportPlugin } from "@elizaos/plugin-gitcoin-passport";
 import { initiaPlugin } from "@elizaos/plugin-initia";
 import { imageGenerationPlugin } from "@elizaos/plugin-image-generation";
-import { lensPlugin } from "@elizaos/plugin-lensNetwork";
+import { lensPlugin } from "@elizaos/plugin-lens-network";
+import { litPlugin } from "@elizaos/plugin-lit";
 import { mindNetworkPlugin } from "@elizaos/plugin-mind-network";
 import { multiversxPlugin } from "@elizaos/plugin-multiversx";
 import { nearPlugin } from "@elizaos/plugin-near";
-import { newsPlugin } from "@elizaos/plugin-news";
 import createNFTCollectionsPlugin from "@elizaos/plugin-nft-collections";
 import { nftGenerationPlugin } from "@elizaos/plugin-nft-generation";
 import { createNodePlugin } from "@elizaos/plugin-node";
@@ -136,7 +138,6 @@ import { holdstationPlugin } from "@elizaos/plugin-holdstation";
 import { nvidiaNimPlugin } from "@elizaos/plugin-nvidia-nim";
 import { zxPlugin } from "@elizaos/plugin-0x";
 import { hyperbolicPlugin } from "@elizaos/plugin-hyperbolic";
-import { litPlugin } from "@elizaos/plugin-lit";
 import { OpacityAdapter } from "@elizaos/plugin-opacity";
 import { openWeatherPlugin } from "@elizaos/plugin-open-weather";
 import { stargazePlugin } from "@elizaos/plugin-stargaze";
@@ -529,10 +530,12 @@ export function getTokenForProvider(
     character: Character
 ): string | undefined {
     switch (provider) {
-        // no key needed for llama_local or gaianet
+        // no key needed for llama_local, ollama, lmstudio, gaianet or bedrock
         case ModelProviderName.LLAMALOCAL:
             return "";
         case ModelProviderName.OLLAMA:
+            return "";
+        case ModelProviderName.LMSTUDIO:
             return "";
         case ModelProviderName.GAIANET:
             return "";
@@ -922,15 +925,19 @@ export async function initializeClients(
 function getSecret(character: Character, secret: string) {
     // Special handling for EigenDA secrets
     if (secret === "EIGENDA_PRIVATE_KEY") {
-        return character.settings?.secrets?.EIGENDA_PRIVATE_KEY ||
-               character.settings?.secrets?.EVM_PRIVATE_KEY ||
-               process.env.EIGENDA_PRIVATE_KEY ||
-               process.env.EVM_PRIVATE_KEY;
+        return (
+            character.settings?.secrets?.EIGENDA_PRIVATE_KEY ||
+            character.settings?.secrets?.EVM_PRIVATE_KEY ||
+            process.env.EIGENDA_PRIVATE_KEY ||
+            process.env.EVM_PRIVATE_KEY
+        );
     }
     if (secret === "BASE_RPC_URL") {
-        return character.settings?.secrets?.BASE_RPC_URL ||
-               process.env.BASE_RPC_URL ||
-               "https://base.drpc.org";
+        return (
+            character.settings?.secrets?.BASE_RPC_URL ||
+            process.env.BASE_RPC_URL ||
+            "https://base.drpc.org"
+        );
     }
     return character.settings?.secrets?.[secret] || process.env[secret];
 }
@@ -1084,6 +1091,10 @@ export async function createAgent(
             (getSecret(character, "WALLET_PUBLIC_KEY") &&
                 getSecret(character, "WALLET_PUBLIC_KEY")?.startsWith("0x"))
                 ? evmPlugin
+                : null,
+            getSecret(character, "EVM_PRIVATE_KEY") ||
+            getSecret(character, "SOLANA_PRIVATE_KEY")
+                ? edwinPlugin
                 : null,
             (getSecret(character, "EVM_PUBLIC_KEY") ||
                 getSecret(character, "INJECTIVE_PUBLIC_KEY")) &&
@@ -1313,6 +1324,10 @@ export async function createAgent(
             getSecret(character, "ARBITRAGE_BUNDLE_EXECUTOR_ADDRESS")
                 ? arbitragePlugin
                 : null,
+            getSecret(character, "DESK_EXCHANGE_PRIVATE_KEY") ||
+            getSecret(character, "DESK_EXCHANGE_NETWORK")
+                ? deskExchangePlugin
+                : null,
             getSecret(character, "EIGENDA_PRIVATE_KEY") &&
             getSecret(character, "BASE_RPC_URL")
                 ? eigendaPlugin
@@ -1537,7 +1552,7 @@ const startAgents = async () => {
         elizaLogger.log(`Server started on alternate port ${serverPort}`);
     }
 
-    elizaLogger.log(
+    elizaLogger.info(
         "Run `pnpm start:client` to start the client and visit the outputted URL (http://localhost:5173) to chat with your agents. When running multiple agents, use client with different port `SERVER_PORT=3001 pnpm start:client`"
     );
 };

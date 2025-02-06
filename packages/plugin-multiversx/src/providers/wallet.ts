@@ -25,7 +25,7 @@ export class WalletProvider {
     private apiNetworkProvider: ApiNetworkProvider; // Interacts with the MultiversX network
     private chainID: string; // Current network chain ID
     private explorerURL: string; // Current network explorer URL
-    private minEGLD: number = 0.0005; // Minimum balance for EGLD, in order to cover gas fees
+    private minEGLD = 0.0005; // Minimum balance for EGLD, in order to cover gas fees
 
     /**
      * Constructor to initialize WalletProvider with a private key and network configuration
@@ -134,7 +134,7 @@ export class WalletProvider {
                     sender: this.getAddress(),
                     receiver: receiver,
                     nativeAmount: BigInt(value),
-                },
+                }
             );
 
             // Get the sender's account details to set the nonce
@@ -150,13 +150,13 @@ export class WalletProvider {
 
             elizaLogger.log(`TxHash: ${txHash}`); // Log transaction hash
             elizaLogger.log(
-                `Transaction URL: ${this.explorerURL}/transactions/${txHash}`,
+                `Transaction URL: ${this.explorerURL}/transactions/${txHash}`
             ); // View Transaction
             return txHash;
         } catch (error) {
             console.error("Error sending EGLD transaction:", error);
             throw new Error(
-                `Failed to send EGLD: ${error.message || "Unknown error"}`,
+                `Failed to send EGLD: ${error.message || "Unknown error"}`
             );
         }
     }
@@ -182,7 +182,7 @@ export class WalletProvider {
 
             if (!hasEgldBalance) {
                 throw new Error(
-                    `Insufficient balance, wallet should have a minimum of ${this.minEGLD} EGLD`,
+                    `Insufficient balance, wallet should have a minimum of ${this.minEGLD} EGLD`
                 );
             }
 
@@ -244,7 +244,7 @@ export class WalletProvider {
         } catch (error) {
             console.error("Error sending ESDT transaction:", error);
             throw new Error(
-                `Failed to send ESDT: ${error.message || "Unknown error"}`,
+                `Failed to send ESDT: ${error.message || "Unknown error"}`
             );
         }
     }
@@ -273,7 +273,7 @@ export class WalletProvider {
 
             if (!hasEgldBalance) {
                 throw new Error(
-                    `Insufficient balance, wallet should have a minimum of ${this.minEGLD} EGLD`,
+                    `Insufficient balance, wallet should have a minimum of ${this.minEGLD} EGLD`
                 );
             }
 
@@ -320,7 +320,7 @@ export class WalletProvider {
         } catch (error) {
             console.error("Error creating ESDT:", error);
             throw new Error(
-                `Failed to create ESDT: ${error.message || "Unknown error"}`,
+                `Failed to create ESDT: ${error.message || "Unknown error"}`
             ); // Throw an error if creation fails
         }
     }
@@ -364,7 +364,7 @@ export class WalletProvider {
      */
     public async signMessage(messageToSign: string) {
         const computer = new MessageComputer();
-        let message = new Message({
+        const message = new Message({
             data: Buffer.from(messageToSign),
         });
 
@@ -382,13 +382,19 @@ export class WalletProvider {
     }
 
     public async getTokenData(
-        identifier: string,
+        identifier: string
     ): Promise<FungibleTokenOfAccountOnNetwork> {
         const address = this.getAddress();
 
         return this.apiNetworkProvider.getFungibleTokenOfAccount(
             address,
-            identifier,
+            identifier
         );
+    }
+
+    public async getTokensData(): Promise<FungibleTokenOfAccountOnNetwork[]> {
+        const address = this.getAddress();
+
+        return this.apiNetworkProvider.getFungibleTokensOfAccount(address);
     }
 }

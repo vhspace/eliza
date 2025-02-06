@@ -118,6 +118,11 @@ export class TwitterPostClient {
         elizaLogger.log(
             `- Dry Run Mode: ${this.isDryRun ? "enabled" : "disabled"}`
         );
+
+        elizaLogger.log(
+            `- Enable Post: ${this.client.twitterConfig.ENABLE_TWITTER_POST_GENERATION ? "enabled" : "disabled"}`
+        );
+
         elizaLogger.log(
             `- Post Interval: ${this.client.twitterConfig.POST_INTERVAL_MIN}-${this.client.twitterConfig.POST_INTERVAL_MAX} minutes`
         );
@@ -287,8 +292,10 @@ export class TwitterPostClient {
             await this.generateNewTweet();
         }
 
-        generateNewTweetLoop();
-        elizaLogger.log("Tweet generation loop started");
+        if (this.client.twitterConfig.ENABLE_TWITTER_POST_GENERATION) {
+            generateNewTweetLoop();
+            elizaLogger.log("Tweet generation loop started");
+        }
 
         if (this.client.twitterConfig.ENABLE_ACTION_PROCESSING) {
             processActionsLoop().catch((error) => {
@@ -505,7 +512,7 @@ export class TwitterPostClient {
             );
 
             const topics = this.runtime.character.topics.join(", ");
-
+            const maxTweetLength = this.client.twitterConfig.MAX_TWEET_LENGTH;
             const state = await this.runtime.composeState(
                 {
                     userId: this.runtime.agentId,
@@ -518,6 +525,7 @@ export class TwitterPostClient {
                 },
                 {
                     twitterUserName: this.client.profile.username,
+                    maxTweetLength,
                 }
             );
 
@@ -574,7 +582,6 @@ export class TwitterPostClient {
             }
 
             // Truncate the content to the maximum tweet length specified in the environment settings, ensuring the truncation respects sentence boundaries.
-            const maxTweetLength = this.client.twitterConfig.MAX_TWEET_LENGTH;
             if (maxTweetLength) {
                 tweetTextForPosting = truncateToCompleteSentence(
                     tweetTextForPosting,

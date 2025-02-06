@@ -483,19 +483,37 @@ export class TwitterInteractionClient {
             } else {
                 try {
                     const callback: HandlerCallback = async (
-                        response: Content
+                        response: Content,
+                        tweetId?: string
                     ) => {
                         const memories = await sendTweet(
                             this.client,
                             response,
                             message.roomId,
                             this.client.twitterConfig.TWITTER_USERNAME,
-                            tweet.id
+                            tweetId || tweet.id
                         );
                         return memories;
                     };
 
-                    const responseMessages = await callback(response);
+                    const action = this.runtime.actions.find((a) => a.name === response.action);
+                    const shouldSuppressInitialMessage = action?.suppressInitialMessage;
+
+                    let responseMessages = [];
+
+                    if (!shouldSuppressInitialMessage) {
+                        responseMessages = await callback(response);
+                    } else {
+                        responseMessages = [{
+                            id: stringToUuid(tweet.id + "-" + this.runtime.agentId),
+                            userId: this.runtime.agentId,
+                            agentId: this.runtime.agentId,
+                            content: response,
+                            roomId: message.roomId,
+                            embedding: getEmbeddingZeroVector(),
+                            createdAt: Date.now(),
+                        }];
+                    }
 
                     state = (await this.runtime.updateRecentMessageState(
                         state
@@ -515,11 +533,17 @@ export class TwitterInteractionClient {
                         );
                     }
 
+                    const responseTweetId =
+                    responseMessages[responseMessages.length - 1]?.content
+                        ?.tweetId;
+
                     await this.runtime.processActions(
                         message,
                         responseMessages,
                         state,
-                        callback
+                        (response: Content) => {
+                            return callback(response, responseTweetId);
+                        }
                     );
 
                     const responseInfo = `Context:\n\n${context}\n\nSelected Post: ${tweet.id} - ${tweet.username}: ${tweet.text}\nAgent's Output:\n${response.text}`;
