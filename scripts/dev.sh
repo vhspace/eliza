@@ -1,5 +1,5 @@
 
-# An array of matching commands to run.
+# An array of commands to run.
 COMMANDS=(
   "turbo run dev --filter=./packages/core"
   "turbo run dev --filter=./packages/plugin-sqlite"
@@ -13,7 +13,7 @@ COMMANDS=(
   "turbo run dev --filter=./packages/agent --filter=./packages/cli"
 )
 
-# Loop over each command/comment pair
+# Loop over each command
 for i in "${!COMMANDS[@]}"; do
   ${COMMANDS[$i]} &
 
