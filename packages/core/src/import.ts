@@ -1,5 +1,33 @@
 import logger from "./logger";
 
+/**
+ * Attempts to import a module with retry logic.
+ * @param modulePath - The module path to import.
+ * @param retries - Number of retry attempts (default: 3).
+ * @param delay - Delay between retries in milliseconds (default: 1000).
+ * @returns The imported module.
+ * @throws An error if all attempts fail.
+ */
+export async function importWithRetry<T = any>(
+  modulePath: string,
+  retries = 3,
+  delay = 1000
+): Promise<T> {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      return await import(modulePath);
+    } catch (error) {
+      if (attempt === retries) {
+        throw new Error(
+          `Failed to import ${modulePath} after ${retries} attempts: ${error}`
+        );
+      }
+      await new Promise((resolve) => setTimeout(resolve, delay));
+    }
+  }
+  throw new Error("Unexpected error in importWithRetry");
+}
+
 const registrations = new Map<string, any>();
 
 export const dynamicImport = async (specifier: string) => {
@@ -7,7 +35,11 @@ export const dynamicImport = async (specifier: string) => {
   if (module !== undefined) {
     return module;
   } else {
-    return await import(specifier);
+    return await importWithRetry<any>(
+        specifier,
+        3,
+        1000
+    );
   }
 };
 
@@ -21,7 +53,11 @@ export async function handlePluginImporting(plugins: string[]) {
       const importedPlugins = await Promise.all(
           plugins.map(async (plugin) => {
               try {
-                  const importedPlugin = await import(plugin);
+                  const importedPlugin = await importWithRetry<any>(
+                      plugin,
+                      3,
+                      1000
+                  );
                   const functionName =
                       `${plugin
                           .replace("@elizaos/plugin-", "")

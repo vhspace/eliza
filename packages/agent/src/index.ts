@@ -16,7 +16,8 @@ import {
     parseBooleanFromText,
     settings,
     stringToUuid,
-    validateCharacterConfig
+    validateCharacterConfig,
+    importWithRetry
 } from "@elizaos/core";
 import fs from "node:fs";
 import net from "node:net";
@@ -342,13 +343,19 @@ function initializeCache(
             );
     }
 }
+  
 
 async function findDatabaseAdapter(runtime: IAgentRuntime) {
   const { adapters } = runtime;
   let adapter: Adapter | undefined;
   // if not found, default to sqlite
   if (adapters.length === 0) {
-    const sqliteAdapterPlugin = await import('@elizaos-plugins/sqlite');
+    const sqliteAdapterPlugin = await importWithRetry<any>(
+        '@elizaos-plugins/sqlite',
+        3,
+        1000
+    );
+    // const sqliteAdapterPlugin = await import('@elizaos-plugins/sqlite');
     const sqliteAdapterPluginDefault = sqliteAdapterPlugin.default;
     adapter = sqliteAdapterPluginDefault.adapters[0];
     if (!adapter) {
