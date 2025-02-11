@@ -61,26 +61,11 @@
     "ws": "8.18.0",
     "zod": "3.24.1"
   },
-
-   "trustedDependencies": [
+  "trustedDependencies": [
     "@biomejs/biome",
     "bun",
     "sharp",
-    "es5-ext",
-    "onnxruntime-node",
-    "nx",
-    "esbuild",
-    "protobufjs",
-    "wtf_wikipedia",
-    "canvas",
-    "bigint-buffer",
-    "@swc/core",
-    "core-js",
-    "ssh2",
-    "bufferutil",
-    "utf-8-validate",
-    "cpu-features",
-    "core-js-pure"
+    "onnxruntime-node"
   ],
   "packageManager": "bun@1.2.2",
   "workspaces": [
