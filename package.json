@@ -61,6 +61,32 @@
     "ws": "8.18.0",
     "zod": "3.24.1"
   },
+
+   "trustedDependencies": [
+    "@biomejs/biome",
+    "bun",
+    "sharp",
+    "es5-ext",
+    "better-sqlite3",
+    "ffmpeg-static",
+    "node-llama-cpp",
+    "onnxruntime-node",
+    "youtube-dl-exec",
+    "nx",
+    "esbuild",
+    "protobufjs",
+    "wtf_wikipedia",
+    "canvas",
+    "puppeteer",
+    "bigint-buffer",
+    "@swc/core",
+    "core-js",
+    "ssh2",
+    "bufferutil",
+    "utf-8-validate",
+    "cpu-features",
+    "core-js-pure"
+  ],
   "packageManager": "bun@1.2.2",
   "workspaces": [
     "packages/*"
