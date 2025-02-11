@@ -355,7 +355,6 @@ async function findDatabaseAdapter(runtime: IAgentRuntime) {
         3,
         1000
     );
-    // const sqliteAdapterPlugin = await import('@elizaos-plugins/sqlite');
     const sqliteAdapterPluginDefault = sqliteAdapterPlugin.default;
     adapter = sqliteAdapterPluginDefault.adapters[0];
     if (!adapter) {
