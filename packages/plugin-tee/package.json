@@ -11,6 +11,9 @@
         "better-sqlite3": "11.8.1",
         "elliptic": "6.6.1"
     },
+    "trustedDependencies": [
+        "better-sqlite3"
+    ],
     "devDependencies": {
         "@biomejs/biome": "1.5.3",
         "@types/node": "^20.0.0",

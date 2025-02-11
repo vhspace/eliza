@@ -67,7 +67,6 @@
     "bun",
     "sharp",
     "es5-ext",
-    "better-sqlite3",
     "ffmpeg-static",
     "node-llama-cpp",
     "onnxruntime-node",
