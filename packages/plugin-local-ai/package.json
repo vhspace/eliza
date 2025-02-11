@@ -77,6 +77,12 @@
         "youtube-dl-exec": "3.0.15",
         "cookie": "0.7.0"
     },
+    "trustedDependencies": [
+        "ffmpeg-static",
+        "node-llama-cpp",
+        "youtube-dl-exec",
+        "puppeteer"
+    ],
     "scripts": {
         "build": "tsup --format esm --dts",
         "dev": "tsup --format esm --dts --watch",
