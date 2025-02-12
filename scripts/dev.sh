@@ -1,7 +1,8 @@
+#!/bin/bash
 
-# An array of commands to run.
+# Define an array of commands to run.
 COMMANDS=(
-  "turbo run dev --filter=./packages/core"
+  "turbo run build --filter=!./packages/docs && turbo run dev --filter=./packages/core"
   "turbo run dev --filter=./packages/plugin-sqlite"
   "turbo run dev \
      --filter=!./packages/agent \
@@ -13,12 +14,12 @@ COMMANDS=(
   "turbo run dev --filter=./packages/agent --filter=./packages/cli"
 )
 
-# Loop over each command
-for i in "${!COMMANDS[@]}"; do
-  ${COMMANDS[$i]} &
+# Loop over each command and run it in the background
+for cmd in "${COMMANDS[@]}"; do
+  eval "$cmd" &
 
-  sleep 3  # 3-second delay before starting each dev command
+  sleep 3  # Delay before starting the next command
 done
 
-# Wait for all background jobs (dev servers) to keep the script alive
+# Wait for all background jobs to keep the script running
 wait
