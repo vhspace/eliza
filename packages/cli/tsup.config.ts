@@ -9,4 +9,8 @@ export default defineConfig({
   minify: true,
   target: "esnext",
   outDir: "dist",
+  external: [
+    "@elizaos-plugins/sqlite",
+    // Add other modules you want to externalize
+  ],
 })
