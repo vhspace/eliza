@@ -5,7 +5,8 @@ COMMANDS=(
   # Ensure core builds first, then plugin-sqlite, then everything else (excluding docs)
   "turbo run build --filter=./packages/core \
    && turbo run build --filter=./packages/plugin-sqlite \
-   && turbo run build --filter=!./packages/docs --filter=!./packages/core --filter=!./packages/plugin-sqlite"
+   && turbo run build --filter=!./packages/docs --filter=!./packages/core --filter=!./packages/plugin-sqlite \
+   && turbo run dev --filter=./packages/core"
   "turbo run dev --filter=./packages/plugin-sqlite"
   "turbo run dev \
      --filter=!./packages/agent \
