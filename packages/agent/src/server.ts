@@ -90,10 +90,11 @@ export class CharacterServer {
                     res.status(404).send("Agent not found");
                     return;
                 }
+                
+                const audioBuffer = fs.readFileSync(audioFile.path);
+                const transcription = await runtime.useModel(ModelClass.TRANSCRIPTION, audioBuffer);
 
-                const transcription = await runtime.useModel(ModelClass.TRANSCRIPTION, fs.createReadStream(audioFile.path));
-
-                res.json(transcription);
+                res.json({text: transcription});
             }
         );
 
