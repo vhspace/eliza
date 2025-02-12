@@ -342,7 +342,6 @@ function initializeCache(
             );
     }
 }
-  
 
 async function findDatabaseAdapter(runtime: IAgentRuntime) {
   const { adapters } = runtime;
