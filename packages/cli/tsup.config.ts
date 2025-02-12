@@ -6,13 +6,14 @@ export default defineConfig({
   entry: ["src/index.ts"],
   format: ["esm"],
   sourcemap: true,
-  external: ['better-sqlite3', 'node:fs'],
   platform: 'node',
   minify: false,
   target: "esnext",
   outDir: "dist",
   external: [
     "@elizaos-plugins/sqlite",
+    'better-sqlite3', 
+    'node:fs'
     // Add other modules you want to externalize
   ],
 })
