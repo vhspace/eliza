@@ -35,11 +35,7 @@ export const dynamicImport = async (specifier: string) => {
   if (module !== undefined) {
     return module;
   } else {
-    return await importWithRetry<any>(
-        specifier,
-        3,
-        1000
-    );
+    return await importWithRetry<any>(specifier);
   }
 };
 
@@ -53,11 +49,7 @@ export async function handlePluginImporting(plugins: string[]) {
       const importedPlugins = await Promise.all(
           plugins.map(async (plugin) => {
               try {
-                  const importedPlugin = await importWithRetry<any>(
-                      plugin,
-                      3,
-                      1000
-                  );
+                  const importedPlugin = await importWithRetry<any>(plugin);
                   const functionName =
                       `${plugin
                           .replace("@elizaos/plugin-", "")
