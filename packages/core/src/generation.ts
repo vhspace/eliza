@@ -535,7 +535,8 @@ export async function generateText({
             case ModelProviderName.TOGETHER:
             case ModelProviderName.NINETEEN_AI:
             case ModelProviderName.AKASH_CHAT_API:
-            case ModelProviderName.LMSTUDIO: {
+            case ModelProviderName.LMSTUDIO:
+            case ModelProviderName.NEARAI: {
                 elizaLogger.debug(
                     "Initializing OpenAI model with Cloudflare check"
                 );
@@ -1394,8 +1395,8 @@ export async function generateShouldRespond({
  */
 export async function splitChunks(
     content: string,
-    chunkSize = 512,
-    bleed = 20
+    chunkSize = 1500,
+    bleed = 100
 ): Promise<string[]> {
     elizaLogger.debug(`[splitChunks] Starting text split`);
 
