@@ -60,7 +60,7 @@ const TagInput = ({ value, onChange, onKeyDown }: TagInputProps) => (
 );
 
 type ArrayInputProps = {
-    title: string;
+    title?: string;
     data: string[];
     onChange: (newData: string[]) => void;
 };
