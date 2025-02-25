@@ -99,6 +99,11 @@ const sidebars = {
                 },
                 {
                     type: "doc",
+                    id: "core/plugins",
+                    label: "Plugins",
+                },
+                {
+                    type: "doc",
                     id: "core/providers",
                     label: "Providers",
                 },
@@ -200,18 +205,6 @@ const sidebars = {
                     type: "doc",
                     id: "advanced/verified-inference",
                     label: "Verified Inference",
-                },
-            ],
-        },
-        {
-            type: "category",
-            label: "📦 Packages",
-            collapsed: false,
-            items: [
-                {
-                    type: "doc",
-                    id: "packages/plugins",
-                    label: "Plugin System",
                 },
             ],
         },

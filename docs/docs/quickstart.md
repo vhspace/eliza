@@ -203,22 +203,17 @@ Here's a sample list of plugins you can check out!
 | [`@elizaos/plugin-browser`](https://github.com/elizaos-plugins/plugin-browser) | Web scraping capabilities
 | [`@elizaos/plugin-pdf`](https://github.com/elizaos-plugins/plugin-pdf) | PDF processing
 
-To add them to your agent, just add which plugin you want in the plugins array of your character file like so:
 
-```json
+Here's how to import and register plugins in your character file:
+
+```typescript
 {
     "name": "Eliza",
     "clients": ["telegram"],
-    "modelProvider": "anthropic",
-    "settings": {
-        "secrets": {},
-        "voice": {
-            "model": "en_US-male-medium"
-        }
-    },
+    // ... other config options
     "plugins": ["@elizaos/plugin-image"],
+}
 ```
-
 
 ### Configure Environment
 
@@ -238,11 +233,10 @@ nano .env
 This option allows you finer grain control over which character uses what resources and is required if you want multiple agents but using different keys. For example:
 
 
-```json
+```typescript
 {
   "name": "eliza",
-  "clients": [],
-  "modelProvider": "openai",
+  // ... other config options
   "settings": {
     "secrets": {
       "DISCORD_APPLICATION_ID": "1234",
