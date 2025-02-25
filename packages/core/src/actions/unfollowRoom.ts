@@ -1,14 +1,7 @@
-import { composeContext, type HandlerCallback } from "@elizaos/core";
-import { generateTrueOrFalse } from "@elizaos/core";
-import { booleanFooter } from "@elizaos/core";
-import {
-    type Action,
-    type ActionExample,
-    type IAgentRuntime,
-    type Memory,
-    ModelClass,
-    type State,
-} from "@elizaos/core";
+import { generateTrueOrFalse } from "..";
+import { composeContext } from "../context";
+import { booleanFooter } from "../parsing";
+import { Action, ActionExample, HandlerCallback, IAgentRuntime, Memory, ModelClass, State } from "../types";
 
 const shouldUnfollowTemplate =
     `# Task: Decide if {{agentName}} should stop closely following this previously followed room and only respond when mentioned.
@@ -36,11 +29,12 @@ export const unfollowRoomAction: Action = {
         "Stop following this channel. You can still respond if explicitly mentioned, but you won't automatically chime in anymore. Unfollow if you're annoying people or have been asked to.",
     validate: async (runtime: IAgentRuntime, message: Memory) => {
         const roomId = message.roomId;
-        const userState = await runtime.databaseAdapter.getParticipantUserState(
+        const roomState = await runtime.databaseAdapter.getParticipantUserState(
             roomId,
-            runtime.agentId
+            runtime.agentId,
+            runtime.agentId,
         );
-        return userState === "FOLLOWED";
+        return roomState === "FOLLOWED";
     },
     handler: async (runtime: IAgentRuntime, message: Memory, state?: State, _options?: { [key: string]: unknown; }, callback?: HandlerCallback, responses?: Memory[] ) => {
         async function _shouldUnfollow(state: State): Promise<boolean> {
@@ -63,6 +57,7 @@ export const unfollowRoomAction: Action = {
         if (await _shouldUnfollow(state)) {
             await runtime.databaseAdapter.setParticipantUserState(
                 message.roomId,
+                runtime.agentId,
                 runtime.agentId,
                 null
             );

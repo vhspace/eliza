@@ -1,14 +1,7 @@
-import { composeContext, type HandlerCallback } from "@elizaos/core";
-import { generateTrueOrFalse } from "@elizaos/core";
-import { booleanFooter } from "@elizaos/core";
-import {
-    type Action,
-    type ActionExample,
-    type IAgentRuntime,
-    type Memory,
-    ModelClass,
-    type State,
-} from "@elizaos/core";
+import { composeContext } from "../context";
+import { generateTrueOrFalse } from "../generation";
+import { booleanFooter } from "../parsing";
+import { Action, ActionExample, HandlerCallback, IAgentRuntime, Memory, ModelClass, State } from "../types";
 
 export const shouldFollowTemplate =
     `# Task: Decide if {{agentName}} should start following this room, i.e. eagerly participating without explicit mentions.
@@ -51,11 +44,12 @@ export const followRoomAction: Action = {
             return false;
         }
         const roomId = message.roomId;
-        const userState = await runtime.databaseAdapter.getParticipantUserState(
+        const roomState = await runtime.databaseAdapter.getParticipantUserState(
             roomId,
-            runtime.agentId
+            runtime.agentId,
+            runtime.agentId,
         );
-        return userState !== "FOLLOWED" && userState !== "MUTED";
+        return roomState !== "FOLLOWED" && roomState !== "MUTED";
     },
     handler: async (runtime: IAgentRuntime, message: Memory, state?: State, _options?: { [key: string]: unknown; }, callback?: HandlerCallback, responses?: Memory[] ) => {
         async function _shouldFollow(state: State): Promise<boolean> {
@@ -78,6 +72,7 @@ export const followRoomAction: Action = {
         if (await _shouldFollow(state)) {
             await runtime.databaseAdapter.setParticipantUserState(
                 message.roomId,
+                runtime.agentId,
                 runtime.agentId,
                 "FOLLOWED"
             );

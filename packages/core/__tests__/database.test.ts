@@ -3,7 +3,7 @@ import { DatabaseAdapter } from "../src/database.ts";
 import {
     type Memory,
     type Actor,
-    type Account,
+    type Entity,
     type Goal,
     GoalStatus,
     type Participant,
@@ -102,7 +102,6 @@ class MockDatabaseAdapter extends DatabaseAdapter {
         throw new Error("Method not implemented.");
     }
     getParticipantsForAccount(userId: UUID): Promise<Participant[]>;
-    getParticipantsForAccount(userId: UUID): Promise<Participant[]>;
     getParticipantsForAccount(
         _userId: unknown
     ): Promise<import("../src/types.ts").Participant[]> {
@@ -120,6 +119,7 @@ class MockDatabaseAdapter extends DatabaseAdapter {
     setParticipantUserState(
         _roomId: UUID,
         _userId: UUID,
+        _agentId: UUID,
         _state: "FOLLOWED" | "MUTED" | null
     ): Promise<void> {
         throw new Error("Method not implemented.");
@@ -199,16 +199,19 @@ class MockDatabaseAdapter extends DatabaseAdapter {
     }
 
     // Mock method for getting account by ID
-    async getAccountById(userId: UUID): Promise<Account | null> {
+    async getEntityById(userId: UUID): Promise<Entity | null> {
         return {
             id: userId,
-            username: "testuser",
-            name: "Test Account",
-        } as Account;
+            metadata: {
+                username: "testuser",
+                name: "Test Entity",
+            },
+            agentId: "agent-id" as UUID,
+        } as Entity;
     }
 
     // Other methods stay the same...
-    async createAccount(_account: Account): Promise<boolean> {
+    async createEntity(_account: Entity): Promise<boolean> {
         return true;
     }
 
@@ -307,18 +310,21 @@ describe("DatabaseAdapter Tests", () => {
     });
 
     it("should get an account by user ID", async () => {
-        const account = await adapter.getAccountById("test-user-id" as UUID);
+        const account = await adapter.getEntityById("test-user-id" as UUID);
         expect(account).not.toBeNull();
-        expect(account?.username).toBe("testuser");
+        expect(account?.metadata?.username).toBe("testuser");
     });
 
     it("should create a new account", async () => {
-        const newAccount: Account = {
+        const newAccount: Entity = {
             id: "new-user-id" as UUID,
-            username: "newuser",
-            name: "New Account",
+            metadata: {
+                username: "newuser",
+                name: "New Entity",
+            },
+            agentId: "agent-id" as UUID,
         };
-        const result = await adapter.createAccount(newAccount);
+        const result = await adapter.createEntity(newAccount);
         expect(result).toBe(true);
     });
 
