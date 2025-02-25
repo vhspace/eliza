@@ -13,6 +13,8 @@ Before getting started with Eliza, ensure you have:
 - Git for version control
 - A code editor ([VS Code](https://code.visualstudio.com/), [Cursor](https://cursor.com/) or [VSCodium](https://vscodium.com) recommended)
 - [CUDA Toolkit](https://developer.nvidia.com/cuda-toolkit) (optional, for GPU acceleration)
+- Python (mainly for installing NPM)
+- FFmpeg (optional, for audio/video handling)
 
 ---
 
@@ -30,8 +32,8 @@ Before getting started with Eliza, ensure you have:
 <summary>Troubleshooting</summary>
 ```bash
 # On Windows? Setup WSL2 first
-wsl --install -d Ubuntu                                                                                                                                       
-# Open Ubuntu, set up user, update:                                                                                                                           
+wsl --install -d Ubuntu
+# Open Ubuntu, set up user, update:
 sudo apt update && sudo apt upgrade -y
 ```
 
@@ -56,7 +58,7 @@ Set-ExecutionPolicy RemoteSigned -Scope CurrentUser  # Windows
 > Note: Always verify scripts before running it
 ```
 ## Linux
-sudo apt update 
+sudo apt update
 
 ## MacOS
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
@@ -97,22 +99,20 @@ git clone git@github.com:elizaOS/eliza.git
 cd eliza
 ```
 
-Switch to the latest [stable version tag](https://github.com/elizaOS/eliza/tags)
-This project moves quick, checkout the latest release known to work:
-
+If you're planning on doing development, we suggest using the code on the develop branch
 ```bash
-git checkout $(git describe --tags --abbrev=0)
+git checkout develop
 ```
 
 Install the dependencies
 
 ```bash
-pnpm install --no-frozen-lockfile
+pnpm install
 ```
 
-> **Note:** Please only use the `--no-frozen-lockfile` option when you're initially instantiating the repo or are bumping the version of a package or adding a new package to your package.json. This practice helps maintain consistency in your project's dependencies and prevents unintended changes to the lockfile.
+> **Note:** you may need to use --no-frozen-lockfile if it gives a message about the frozen lock file being out of date
 
-Build the local libraries
+Compile the typescript
 
 ```bash
 pnpm build
@@ -120,7 +120,53 @@ pnpm build
 
 ---
 
+## Character File(s)
+
+If you would like the sample character files too, then run this (does not work on eliza-starter)
+
+```
+# Download characters submodule from the character repos
+git submodule update --init
+```
+
+---
+
+## Select plugins
+
+There are two ways to get a list of available plugins:
+
+1. Web Interface
+
+Go https://elizaos.github.io/registry/ and you can use it's search
+
+2. CLI Interface
+
+```bash
+$ npx elizaos plugins list
+```
+
+#### Recommended plugins
+
+| plugin name | Description |
+| ----------- | ----------- |
+| `@elizaos/plugin-llama` | Run LLM models on your local machine
+| `@elizaos/client-twitter` | Twitter bot integration
+| `@elizaos/client-discord` | Discord bot integration
+| `@elizaos/plugin-telegram` | Telegram integration
+| `@elizaos/plugin-image` | Image processing and analysis
+| `@elizaos/plugin-video` | Video processing capabilities
+| `@elizaos/plugin-browser` | Web scraping capabilities
+| `@elizaos/plugin-pdf` | PDF processing
+| `@elizaos/plugin-solana` | Solana blockchain integration
+| `@elizaos/plugin-evm` | EVM blockchain integration
+
 ## Configure Environment
+
+There are two ways to configure elizaOS
+
+### Option 1: Set agent default in an .env file
+
+This is the simpler option especially if you plan to just host one agent.
 
 Copy example environment file
 
@@ -128,7 +174,7 @@ Copy example environment file
 cp .env.example .env
 ```
 
-Edit `.env` and add your values. Do NOT add this file to version control.
+Edit `.env` and add your values.
 
 ```bash
 # Suggested quickstart environment variables
@@ -140,6 +186,28 @@ GROK_API_KEY=          # Grok API key
 ELEVENLABS_XI_API_KEY= # API key from elevenlabs (for voice)
 LIVEPEER_GATEWAY_URL=  # Livepeer gateway URL
 ```
+
+### Option 2: Placing secrets in the character file
+
+This option allows you finer grain control over which character uses what resources and is required if you want multiple agents but using different keys.
+
+
+#### Example
+```json
+{
+  "name": "eliza",
+  "clients": [],
+  "modelProvider": "openai",
+  "settings": {
+    "secrets": {
+      "DISCORD_APPLICATION_ID": "1234",
+      "DISCORD_API_TOKEN": "xxxx",
+      "OPENAI_API_KEY": "sk-proj-xxxxxxxxx-..."
+    }
+  }
+```
+
+Be sure to make sure you make sure it's valid json (watch the commas)
 
 ## Choose Your Model
 
@@ -347,7 +415,7 @@ NODE_MODULE_VERSION 131. This version of Node.js requires
 NODE_MODULE_VERSION 127. Please try re-compiling or re-installing
 ```
 
-or 
+or
 
 ```
 Error: Could not locate the bindings file. Tried:
