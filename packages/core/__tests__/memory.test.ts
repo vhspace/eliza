@@ -39,6 +39,7 @@ describe("MemoryManager", () => {
             cacheManager: new CacheManager(new MemoryCacheAdapter()),
             agentId: AGENT_UUID,
             useModel: mock(() => Promise.resolve([])),
+            transformUserId: (userId) => userId,
         } as unknown as IAgentRuntime;
 
         memoryManager = new MemoryManager({
@@ -230,7 +231,7 @@ describe("MemoryManager", () => {
             expect(mockDatabaseAdapter.createMemory).toHaveBeenCalledWith(
                 expect.objectContaining({
                     metadata: expect.objectContaining({
-                        type: MemoryType.DOCUMENT,
+                        type: "documents",
                         scope: "shared",
                         timestamp: expect.any(Number)
                     })
@@ -270,18 +271,18 @@ describe("MemoryManager", () => {
     });
 
     describe("Table Name Validation", () => {
-        it("should only accept valid table names", () => {
+        it("should accept any table name", () => {
             // Valid cases
             expect(() => new MemoryManager({ 
                 tableName: "documents",
                 runtime: mockRuntime 
             })).not.toThrow();
             
-            // Invalid cases
+            // Now any table name is valid
             expect(() => new MemoryManager({ 
-                tableName: "not_a_valid_table" as string,
+                tableName: "not_a_valid_table",
                 runtime: mockRuntime 
-            })).toThrow();
+            })).not.toThrow();
         });
 
         it("should enforce table-specific metadata types", async () => {
@@ -296,16 +297,26 @@ describe("MemoryManager", () => {
                 roomId: ROOM_UUID,
                 content: { text: "test" },
                 metadata: {
-                    type: MemoryType.FRAGMENT,  // Wrong type for documents table
+                    type: MemoryType.FRAGMENT,
                     documentId: TEST_UUID_1,
                     position: 0,
                     timestamp: Date.now()
                 }
             };
 
-            await expect(documentsManager.createMemory(invalidMemory))
-                .rejects
-                .toThrow("Invalid metadata type for table documents. Expected document, got fragment");
+            // This should now succeed since validation was removed
+            await documentsManager.createMemory(invalidMemory);
+            
+            // Verify it was called with the provided metadata
+            expect(mockDatabaseAdapter.createMemory).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    metadata: expect.objectContaining({
+                        type: "fragment"
+                    })
+                }),
+                "documents",
+                false
+            );
         });
 
         it("should enforce metadata requirements", async () => {

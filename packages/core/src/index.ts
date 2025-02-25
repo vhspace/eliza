@@ -22,3 +22,4 @@ export * from "./runtime.ts";
 export * from "./settings.ts";
 export * from "./uuid.ts";
 export * from "./import.ts";
+export * from "./knowledge-loader.ts";
