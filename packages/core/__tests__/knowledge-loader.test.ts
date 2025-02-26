@@ -93,4 +93,14 @@ describe("Knowledge Loader", () => {
         );
         expect(nestedCall).toBeUndefined();
     });
+
+    // Tests for loading documents from a folder
+    it('should load documents from a folder', async () => {
+        // Test implementation
+    });
+
+    // Tests for loading a specific document
+    it('should load a document', async () => {
+        // Test implementation
+    });
 }); 
