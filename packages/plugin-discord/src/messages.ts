@@ -62,7 +62,7 @@ export class MessageManager {
     }
 
     const userId = message.author.id as UUID;
-    const userIdUUID = stringToUuid(userId);
+    const userIdUUID = stringToUuid(`${message.author.id}-${this.runtime.agentId}`);
     const userName = message.author.username;
     const name = message.author.displayName;
     const channelId = message.channel.id;
@@ -114,7 +114,13 @@ export class MessageManager {
         attachments.push(...processedAudioAttachments);
       }
 
-      const userIdUUID = stringToUuid(userId);
+      if (!processedContent && !attachments?.length) {
+        // Only process messages that are not empty
+        return;
+      }
+      
+      const userIdUUID = stringToUuid(`${message.author.id}-${this.runtime.agentId}`);
+
       const messageId = stringToUuid(`${message.id}-${this.runtime.agentId}`);
 
       const newMessage: Memory = {
@@ -125,7 +131,7 @@ export class MessageManager {
         content: {
           name: name,
           userName: userName,
-          text: processedContent,
+          text: processedContent || " ",
           attachments: attachments,
           source: "discord",
           url: message.url,
@@ -186,7 +192,6 @@ export class MessageManager {
         }
       };
 
-      logger.info("**** DISCORD_MESSAGE_RECEIVED, EMITTING");
       this.runtime.emitEvent(["DISCORD_MESSAGE_RECEIVED", "MESSAGE_RECEIVED"], {
         runtime: this.runtime,
         message: newMessage,

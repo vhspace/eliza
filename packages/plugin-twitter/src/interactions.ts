@@ -225,7 +225,7 @@ export class TwitterInteractionClient {
             }
 
             // Sort tweet candidates by ID in ascending order
-            uniqueTweetCandidates
+            uniqueTweetCandidates = uniqueTweetCandidates
                 .sort((a, b) => a.id.localeCompare(b.id))
                 .filter((tweet) => tweet.userId !== this.client.profile.id);
 
@@ -379,8 +379,11 @@ export class TwitterInteractionClient {
 
         if (!tweetExists) {
             logger.log("tweet does not exist, saving");
-            const userIdUUID = stringToUuid(tweet.userId as string);
-            const roomId = stringToUuid(tweet.conversationId);
+            const userIdUUID = stringToUuid(`${tweet.userId}-${this.runtime.agentId}`);
+
+            const roomId = stringToUuid(
+                `${tweet.conversationId}-${this.runtime.agentId}`
+            );
 
             await this.runtime.ensureConnection({
                 userId: userIdUUID,

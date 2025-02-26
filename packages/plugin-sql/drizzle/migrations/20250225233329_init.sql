@@ -6,6 +6,7 @@ CREATE TABLE "agents" (
 );
 --> statement-breakpoint
 CREATE TABLE "cache" (
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"key" text NOT NULL,
 	"agentId" text NOT NULL,
 	"value" jsonb DEFAULT '{}'::jsonb,
@@ -55,7 +56,7 @@ CREATE TABLE "entities" (
 );
 --> statement-breakpoint
 CREATE TABLE "goals" (
-	"id" uuid NOT NULL,
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"createdAt" timestamptz DEFAULT now() NOT NULL,
 	"userId" uuid,
 	"agentId" uuid,
@@ -103,7 +104,7 @@ CREATE TABLE "memories" (
 );
 --> statement-breakpoint
 CREATE TABLE "participants" (
-	"id" uuid NOT NULL,
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"createdAt" timestamptz DEFAULT now() NOT NULL,
 	"userId" uuid,
 	"roomId" uuid,
@@ -112,7 +113,7 @@ CREATE TABLE "participants" (
 );
 --> statement-breakpoint
 CREATE TABLE "relationships" (
-	"id" uuid NOT NULL,
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"createdAt" timestamptz DEFAULT now() NOT NULL,
 	"userA" uuid NOT NULL,
 	"userB" uuid NOT NULL,
@@ -122,7 +123,7 @@ CREATE TABLE "relationships" (
 );
 --> statement-breakpoint
 CREATE TABLE "rooms" (
-	"id" uuid PRIMARY KEY NOT NULL,
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"agentId" uuid,
 	"source" text NOT NULL,
 	"type" text NOT NULL,
@@ -135,7 +136,7 @@ CREATE TABLE "rooms" (
 );
 --> statement-breakpoint
 CREATE TABLE "worlds" (
-	"id" uuid PRIMARY KEY NOT NULL,
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"agentId" uuid NOT NULL,
 	"name" text NOT NULL,
 	"metadata" jsonb,

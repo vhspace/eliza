@@ -1,4 +1,5 @@
 import {
+    Actor,
     Agent,
     DatabaseAdapter,
     logger,
@@ -691,18 +692,16 @@ export abstract class BaseDrizzleAdapter<TDatabase extends DrizzleOperations>
             try {
                 const result = await this.db
                     .select({
-                        id: accountTable.id,
-                        name: accountTable.name,
-                        username: accountTable.username,
-                        details: accountTable.details,
+                        id: entityTable.id,
+                        metadata: entityTable.metadata,
                     })
                     .from(participantTable)
                     .leftJoin(
-                        accountTable,
-                        eq(participantTable.userId, accountTable.id)
+                        entityTable,
+                        eq(participantTable.userId, entityTable.id)
                     )
                     .where(eq(participantTable.roomId, params.roomId))
-                    .orderBy(accountTable.name);
+                    .orderBy(entityTable.metadata?.name ?? entityTable.id);
 
                 logger.debug("Retrieved actor details:", {
                     roomId: params.roomId,
@@ -819,11 +818,6 @@ export abstract class BaseDrizzleAdapter<TDatabase extends DrizzleOperations>
 
                 await tx.insert(embeddingTable).values([embeddingValues]);
             }
-        });
-
-        logger.info("Memory created successfully:", {
-            memoryId,
-            hasEmbedding: !!memory.embedding,
         });
     }
 
@@ -1047,6 +1041,7 @@ export abstract class BaseDrizzleAdapter<TDatabase extends DrizzleOperations>
                     channelId: roomTable.channelId as any,
                     agentId: roomTable.agentId as any,
                     serverId: roomTable.serverId as any,
+                    worldId: roomTable.worldId as any,
                     type: roomTable.type as any,
                     source: roomTable.source as any,
                 })
@@ -1211,7 +1206,7 @@ export abstract class BaseDrizzleAdapter<TDatabase extends DrizzleOperations>
                     )
                 );
 
-            return result.map((row) => row.id as UUID);
+            return result.map((row) => row.userId as UUID);
         });
     }
 
@@ -1662,6 +1657,13 @@ export abstract class BaseDrizzleAdapter<TDatabase extends DrizzleOperations>
         return this.withDatabase(async () => {
             const result = await this.db.select().from(worldTable).where(eq(worldTable.id, id));
             return result[0] as WorldData | null;
+        });
+    }
+
+    async getAllWorlds(agentId: UUID): Promise<WorldData[]> {
+        return this.withDatabase(async () => {
+            const result = await this.db.select().from(worldTable).where(eq(worldTable.agentId, agentId));
+            return result as WorldData[];
         });
     }
 
