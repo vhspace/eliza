@@ -42,11 +42,11 @@ import {
 import { v4 } from "uuid";
 import {
     characterToInsert,
-    StoredTemplate,
+    type StoredTemplate,
     storedToTemplate,
     templateToStored,
 } from "./schema/character";
-import { DIMENSION_MAP, EmbeddingDimensionColumn } from "./schema/embedding";
+import { DIMENSION_MAP, type EmbeddingDimensionColumn } from "./schema/embedding";
 import {
     cacheTable,
     characterTable,
