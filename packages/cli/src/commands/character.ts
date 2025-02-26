@@ -412,7 +412,7 @@ character.command("edit")
   .option("-f, --field <field>", "edit specific field (bio, adjectives, topics, style, plugins, examples)")
   .action(async (opts) => {
     await withConnection(async () => {
-      const existing = await adapter.getCharacter(opts.name);
+      const existing = await adapter.getCharacterByName(opts.name);
       if (!existing) {
         logger.error(`Character ${opts.name} not found`);
         return;
@@ -503,8 +503,8 @@ character.command("import")
         };
 
         // Check if a character with the same name already exists.
-        const existing = await adapter.getCharacter(parsed.name);
-        if (existing) {
+        const exists = await adapter.getCharacterByName(parsed.name);
+        if (exists) {
           logger.warn(`Character "${parsed.name}" already exists.`);
           let proceed: boolean;
           if (opts.yes) {
@@ -522,8 +522,8 @@ character.command("import")
             logger.info("Replacement cancelled");
             return;
           }
-          await adapter.updateCharacter(parsed.name, charData);
-          logger.success(`Replaced character "${parsed.name}" successfully`);
+          await adapter.updateCharacter(exists.id, charData);
+          logger.success(`Replaced character "${charData.name}" successfully`);
         } else {
           if (opts.yes || await reviewCharacter(charData)) {
             await adapter.createCharacter(charData);
@@ -546,7 +546,7 @@ character.command("export")
   .option("-p, --pretty", "pretty print JSON")
   .action(async (opts) => {
     await withConnection(async () => {
-      const characterData = await adapter.getCharacter(opts.name);
+      const characterData = await adapter.getCharacterByName(opts.name);
       if (!characterData) {
         logger.error(`Character ${opts.name} not found`);
         return;
@@ -567,15 +567,15 @@ character.command("remove")
   .option("-f, --force", "skip confirmation")
   .action(async (opts) => {
     await withConnection(async () => {
-      const exists = await adapter.getCharacter(opts.name);
+      const exists = await adapter.getCharacterByName(opts.name);
       if (!exists) {
         logger.error(`Character ${opts.name} not found`);
         return;
       }
 
-      if (opts.force || await confirmAction(`Are you sure you want to remove character "${opts.name}"?`)) {
-        await adapter.removeCharacter(opts.name);
-        logger.success(`Removed character ${opts.name}`);
+      if (opts.force || await confirmAction(`Are you sure you want to remove character "${exists.name}"?`)) {
+        await adapter.removeCharacter(exists.id);
+        logger.success(`Removed character ${exists.name}`);
       } else {
         logger.info("Removal cancelled");
       }

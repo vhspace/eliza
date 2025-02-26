@@ -1,5 +1,5 @@
-import type { Character } from '@elizaos/core';
-import { logger, validateCharacterConfig, UUID } from '@elizaos/core';
+import type { Character, UUID } from '@elizaos/core';
+import { logger, validateCharacterConfig } from '@elizaos/core';
 import { createDatabaseAdapter } from '@elizaos/plugin-sql';
 import type { Request, Response } from 'express';
 import { Router } from 'express';
@@ -101,7 +101,7 @@ export function characterRouter(): Router {
                 const existing = await dbAdapter.getCharacterByName(character.name);
                 if (existing) {
                     await dbAdapter.updateCharacter(existing.id, character);
-                    const updated = await dbAdapter.getCharacter(existing.id);
+                    const updated = await dbAdapter.getCharacterByName(existing.name);
                     res.json(updated);
                 } else {
                     const id = await dbAdapter.createCharacter(character);

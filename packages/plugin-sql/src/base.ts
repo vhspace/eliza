@@ -1,6 +1,6 @@
 import {
-    Actor,
-    Agent,
+    type Actor,
+    type Agent,
     DatabaseAdapter,
     logger,
     type Character,
@@ -61,7 +61,7 @@ import {
     roomTable,
     worldTable,
 } from "./schema/index";
-import { DrizzleOperations } from "./types";
+import type { DrizzleOperations } from "./types";
 
 export abstract class BaseDrizzleAdapter<TDatabase extends DrizzleOperations> 
     extends DatabaseAdapter<TDatabase>
@@ -1581,8 +1581,8 @@ export abstract class BaseDrizzleAdapter<TDatabase extends DrizzleOperations>
 
     private mapCharacterFromDb(char: typeof characterTable.$inferSelect): Character {
         return {
-            id: char.id,
-            name: char.name,
+            id: char.id as UUID,
+            name: char.name as string,
             username: char.username ?? undefined,
             system: char.system ?? undefined,
             templates: char.templates

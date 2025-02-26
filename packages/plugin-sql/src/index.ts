@@ -6,15 +6,20 @@ import { PostgresConnectionManager } from './pg/manager';
 
 let pgLiteClientManager: PGliteClientManager;
 
-export function createDatabaseAdapter(config: any): IDatabaseAdapter & IDatabaseCacheAdapter {
+export function createDatabaseAdapter(config: {
+  dataDir?: string;
+  postgresUrl?: string;
+}): IDatabaseAdapter & IDatabaseCacheAdapter {
   if (config.dataDir) {
     if (!pgLiteClientManager) {
       pgLiteClientManager = new PGliteClientManager({ dataDir: config.dataDir });
     }
-    return new PgliteDatabaseAdapter(pgLiteClientManager);
-  } else if (config.postgresUrl) {
+    new PgliteDatabaseAdapter(pgLiteClientManager);
+  }
+  
+  if (config.postgresUrl) {
     const manager = new PostgresConnectionManager(config.postgresUrl);
-    return new PgDatabaseAdapter(manager);
+    new PgDatabaseAdapter(manager);
   }
   throw new Error("No valid database configuration provided");
 }

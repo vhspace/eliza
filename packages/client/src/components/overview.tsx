@@ -77,7 +77,6 @@ type CheckboxField = {
   getValue: (char: Character) => boolean;
 };
 
-type Plugin = string;
 
 const TEXT_FIELDS: InputField[] = [
   {
@@ -165,7 +164,7 @@ const TWITTER_CHECKBOXES: CheckboxField[] = [
 
 export default function Overview({ character }: { character: Character }) {
   const { toast } = useToast();
-  const { data: plugins, isLoading, error } = usePlugins();
+  const { data: plugins, error } = usePlugins();
 
   const [characterValue, setCharacterValue] = useState<Character>(character);
   const [isSubmitting, setIsSubmitting] = useState(false);
