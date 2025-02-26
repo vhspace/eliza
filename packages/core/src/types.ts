@@ -758,6 +758,18 @@ export interface IDatabaseAdapter {
 
   updateAgent(agent: Agent): Promise<boolean>;
 
+  /** Get character by ID */
+  getCharacter(id: UUID): Promise<Character | null>;
+
+  /** Get character by name */
+  getCharacterByName(name: string): Promise<Character | null>;
+
+  /** Create new character */
+  createCharacter(character: Character): Promise<UUID>;
+
+  /** Update character */
+  updateCharacter(id: UUID, updates: Partial<Character>): Promise<void>;
+
   /** Get account by ID */
   getEntityById(userId: UUID, agentId: UUID): Promise<Entity | null>;
 
@@ -916,15 +928,7 @@ export interface IDatabaseAdapter {
 
   getRelationships(params: { userId: UUID; agentId: UUID }): Promise<Relationship[]>;
 
-  createCharacter(character: Character): Promise<UUID | void>;
-
   listCharacters(): Promise<Character[]>;
-
-  getCharacter(name: string): Promise<Character | null>;
-
-  updateCharacter(name: string, updates: Partial<Character>): Promise<void>;
-  
-  removeCharacter(name: string): Promise<void>;
 
   ensureEmbeddingDimension(dimension: number, agentId: UUID): void;
 }

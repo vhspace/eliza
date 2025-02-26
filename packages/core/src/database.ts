@@ -403,9 +403,9 @@ export abstract class DatabaseAdapter<DB = any> implements IDatabaseAdapter {
     /**
      * Creates a new character in the database.
      * @param character The Character object to create.
-     * @returns A Promise that resolves when the character creation is complete.
+     * @returns A Promise that resolves to the UUID of the created character.
      */
-    abstract createCharacter(character: Character): Promise<UUID | void>;
+    abstract createCharacter(character: Character): Promise<UUID>;
 
     /**
      * Retrieves all characters from the database.
@@ -414,26 +414,33 @@ export abstract class DatabaseAdapter<DB = any> implements IDatabaseAdapter {
     abstract listCharacters(): Promise<Character[]>;
 
     /**
+     * Retrieves a character by their ID.
+     * @param id The UUID of the character to retrieve.
+     * @returns A Promise that resolves to the Character object or null if not found.
+     */
+    abstract getCharacter(id: UUID): Promise<Character | null>;
+
+    /**
      * Retrieves a character by their name.
      * @param name The name of the character to retrieve.
      * @returns A Promise that resolves to the Character object or null if not found.
      */
-    abstract getCharacter(name: string): Promise<Character | null>;
+    abstract getCharacterByName(name: string): Promise<Character | null>;
 
     /**
      * Updates an existing character in the database.
-     * @param name The name of the character to update.
+     * @param id The UUID of the character to update.
      * @param updates Partial Character object containing the fields to update.
      * @returns A Promise that resolves when the character update is complete.
      */
-    abstract updateCharacter(name: string, updates: Partial<Character>): Promise<void>;
+    abstract updateCharacter(id: UUID, updates: Partial<Character>): Promise<void>;
 
     /**
      * Removes a character from the database.
-     * @param name The name of the character to remove.
+     * @param id The UUID of the character to remove.
      * @returns A Promise that resolves when the character removal is complete.
      */
-    abstract removeCharacter(name: string): Promise<void>;
+    abstract removeCharacter(id: UUID): Promise<void>;
 
     /**
      * Ensures the embedding dimension is properly set for the database.

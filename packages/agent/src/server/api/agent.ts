@@ -1,11 +1,10 @@
 import express from 'express';
-import type { Character, IAgentRuntime, Media } from '@elizaos/core';
+import type { IAgentRuntime, Character, Content, Media, Memory } from '@elizaos/core';
 import { ChannelType, composeContext, generateMessageResponse, logger, ModelClass, stringToUuid, validateCharacterConfig } from '@elizaos/core';
 import fs from 'node:fs';
 import type { AgentServer } from '..';
 import { validateUUIDParams } from './api-utils';
 
-import type { Content, Memory } from '@elizaos/core';
 import path from 'node:path';
 import { messageHandlerTemplate } from '../helper';
 import { upload } from '../loader';
@@ -45,7 +44,8 @@ export function agentRouter(
             return;
         }
 
-        const character = agent?.character;
+        // Ensure we have the latest character data with ID
+        const character = agent.character;
         if (character?.settings?.secrets) {
             character.settings.secrets = undefined;
         }
@@ -55,7 +55,7 @@ export function agentRouter(
 
         res.json({
             id: agent.agentId,
-            character: agent.character,
+            character: character,
         });
     });
 
@@ -192,6 +192,7 @@ export function agentRouter(
                 runtime: runtime,
                 context,
                 modelClass: ModelClass.TEXT_LARGE,
+                stopSequences: []
             });
 
             logger.info(`[MESSAGE ENDPOINT] After generateMessageResponse, response: ${response}`);

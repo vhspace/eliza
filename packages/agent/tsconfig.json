@@ -1,16 +1,24 @@
 {
     "extends": "../../packages/core/tsconfig.json",
     "compilerOptions": {
-        "outDir": "dist",
-        "rootDir": ".",
+        "target": "ESNext",
         "module": "ESNext",
-        "moduleResolution": "Bundler",
-        "types": ["node"]
+        "moduleResolution": "node",
+        "types": ["bun-types"],
+        "allowJs": true,
+        "strict": true,
+        "noEmit": true,
+        "allowSyntheticDefaultImports": true,
+        "skipLibCheck": true,
+        "jsx": "react-jsx",
+        "paths": {
+            "@elizaos/*": ["../*/src"]
+        }
     },
     "ts-node": {
         "experimentalSpecifierResolution": "node",
         "transpileOnly": true,
         "esm": true
     },
-    "include": ["src"]
+    "include": ["src/**/*"]
 }

@@ -402,7 +402,7 @@ export async function generateMessageResponse({
     const text = await runtime.useModel(modelClass, {
       runtime,
       context,
-      stop: stopSequences,
+      stopSequences,
     });
 
     const parsedContent = parseJSONObjectFromText(text) as Content;

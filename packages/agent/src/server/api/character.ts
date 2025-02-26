@@ -1,5 +1,5 @@
 import type { Character } from '@elizaos/core';
-import { logger, validateCharacterConfig } from '@elizaos/core';
+import { logger, validateCharacterConfig, UUID } from '@elizaos/core';
 import { createDatabaseAdapter } from '@elizaos/plugin-sql';
 import type { Request, Response } from 'express';
 import { Router } from 'express';
@@ -17,8 +17,8 @@ function getValidatedCharacter(req: Request): Character {
 }
 
 // Utility function to check if a character exists.
-async function ensureCharacterExists(name: string, res: Response): Promise<Character | null> {
-    const character = await dbAdapter.getCharacter(name);
+async function ensureCharacterExists(id: UUID, res: Response): Promise<Character | null> {
+    const character = await dbAdapter.getCharacter(id);
     if (!character) {
         res.status(404).json({ error: 'Character not found' });
         return null;
@@ -43,12 +43,13 @@ export function characterRouter(): Router {
         .post(async (req: Request, res: Response): Promise<void> => {
             try {
                 const character = getValidatedCharacter(req);
-                const existing = await dbAdapter.getCharacter(character.name);
+                const existing = await dbAdapter.getCharacterByName(character.name);
                 if (existing) {
                     res.status(409).json({ error: 'Character already exists' });
                     return;
                 }
-                const newCharacter = await dbAdapter.createCharacter(character);
+                const id = await dbAdapter.createCharacter(character);
+                const newCharacter = await dbAdapter.getCharacter(id);
                 res.status(201).json(newCharacter);
             } catch (error) {
                 handleValidationError(error, res, 'Failed to create character');
@@ -56,10 +57,10 @@ export function characterRouter(): Router {
         });
 
     // Routes for managing a specific character.
-    router.route('/:name')
-        .get(async (req: Request<{ name: string }>, res: Response): Promise<void> => {
+    router.route('/:id')
+        .get(async (req: Request<{ id: UUID }>, res: Response): Promise<void> => {
             try {
-                const character = await dbAdapter.getCharacter(req.params.name);
+                const character = await dbAdapter.getCharacter(req.params.id);
                 if (!character) {
                     res.status(404).json({ error: 'Character not found' });
                     return;
@@ -70,20 +71,21 @@ export function characterRouter(): Router {
                 res.status(500).json({ error: 'Failed to retrieve character' });
             }
         })
-        .put(async (req: Request<{ name: string }>, res: Response): Promise<void> => {
+        .put(async (req: Request<{ id: UUID }>, res: Response): Promise<void> => {
             try {
-                if (!(await ensureCharacterExists(req.params.name, res))) return;
+                if (!(await ensureCharacterExists(req.params.id, res))) return;
                 const character = getValidatedCharacter(req);
-                await dbAdapter.updateCharacter(req.params.name, character);
-                res.json(character);
+                await dbAdapter.updateCharacter(req.params.id, character);
+                const updated = await dbAdapter.getCharacter(req.params.id);
+                res.json(updated);
             } catch (error) {
                 handleValidationError(error, res, 'Failed to update character');
             }
         })
-        .delete(async (req: Request<{ name: string }>, res: Response): Promise<void> => {
+        .delete(async (req: Request<{ id: UUID }>, res: Response): Promise<void> => {
             try {
-                if (!(await ensureCharacterExists(req.params.name, res))) return;
-                await dbAdapter.removeCharacter(req.params.name);
+                if (!(await ensureCharacterExists(req.params.id, res))) return;
+                await dbAdapter.removeCharacter(req.params.id);
                 res.status(204).end();
             } catch (error) {
                 logger.error('Failed to remove character:', error);
@@ -96,18 +98,35 @@ export function characterRouter(): Router {
         .post(async (req: Request, res: Response): Promise<void> => {
             try {
                 const character = getValidatedCharacter(req);
-                const existing = await dbAdapter.getCharacter(character.name);
+                const existing = await dbAdapter.getCharacterByName(character.name);
                 if (existing) {
-                    await dbAdapter.updateCharacter(character.name, character);
-                    res.json(character);
+                    await dbAdapter.updateCharacter(existing.id, character);
+                    const updated = await dbAdapter.getCharacter(existing.id);
+                    res.json(updated);
                 } else {
-                    const newChar = await dbAdapter.createCharacter(character);
+                    const id = await dbAdapter.createCharacter(character);
+                    const newChar = await dbAdapter.getCharacter(id);
                     res.status(201).json(newChar);
                 }
             } catch (error) {
                 handleValidationError(error, res, 'Failed to import character');
             }
         });
+
+    // Lookup route to find character by name
+    router.get('/name/:name', async (req: Request<{ name: string }>, res: Response): Promise<void> => {
+        try {
+            const character = await dbAdapter.getCharacterByName(req.params.name);
+            if (!character) {
+                res.status(404).json({ error: 'Character not found' });
+                return;
+            }
+            res.json(character);
+        } catch (error) {
+            logger.error('Failed to get character by name:', error);
+            res.status(500).json({ error: 'Failed to retrieve character' });
+        }
+    });
 
     return router;
 }

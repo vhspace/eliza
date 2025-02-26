@@ -1492,20 +1492,21 @@ export abstract class BaseDrizzleAdapter<TDatabase extends DrizzleOperations>
             }
         });
     }
-    async createCharacter(character: Character): Promise<UUID | void> {
+    async createCharacter(character: Character): Promise<UUID> {
         return this.withDatabase(async () => {
             try {
+                const id = v4() as UUID;
                 await this.db.transaction(async (tx) => {
-                    const insertData = characterToInsert({ ...character });
+                    const insertData = characterToInsert({ ...character, id });
                     await tx.insert(characterTable).values(insertData);
-                    return character.id;
                 });
     
                 logger.debug("Character created successfully:", {
+                    id,
                     name: character.name,
                 });
 
-                return character.id;
+                return id;
             } catch (error) {
                 logger.error("Failed to create character:", {
                     error: error instanceof Error ? error.message : String(error),
@@ -1550,7 +1551,21 @@ export abstract class BaseDrizzleAdapter<TDatabase extends DrizzleOperations>
         });
     }
 
-    async getCharacter(name: string): Promise<Character | null> {
+    async getCharacter(id: UUID): Promise<Character | null> {
+        return this.withDatabase(async () => {
+            const result = await this.db
+                .select()
+                .from(characterTable)
+                .where(eq(characterTable.id, id))
+                .limit(1);
+
+            if (result.length === 0) return null;
+
+            return this.mapCharacterFromDb(result[0]);
+        });
+    }
+
+    async getCharacterByName(name: string): Promise<Character | null> {
         return this.withDatabase(async () => {
             const result = await this.db
                 .select()
@@ -1560,38 +1575,39 @@ export abstract class BaseDrizzleAdapter<TDatabase extends DrizzleOperations>
 
             if (result.length === 0) return null;
 
-            const char = result[0];
-            return {
-                name: char.name,
-                username: char.username ?? undefined,
-                system: char.system ?? undefined,
-                templates: char.templates
-                    ? Object.fromEntries(
-                          Object.entries(char.templates).map(
-                              ([key, stored]) => [
-                                  key,
-                                  storedToTemplate(stored as StoredTemplate),
-                              ]
-                          )
-                      )
-                    : undefined,
-                bio: char.bio,
-                messageExamples: char.messageExamples || undefined,
-                postExamples: char.postExamples || undefined,
-                topics: char.topics || undefined,
-                adjectives: char.adjectives || undefined,
-                knowledge: char.knowledge || undefined,
-                plugins: char.plugins || undefined,
-                settings: char.settings || undefined,
-                style: char.style || undefined,
-            };
+            return this.mapCharacterFromDb(result[0]);
         });
     }
 
-    async updateCharacter(
-        name: string,
-        updates: Partial<Character>
-    ): Promise<void> {
+    private mapCharacterFromDb(char: typeof characterTable.$inferSelect): Character {
+        return {
+            id: char.id,
+            name: char.name,
+            username: char.username ?? undefined,
+            system: char.system ?? undefined,
+            templates: char.templates
+                ? Object.fromEntries(
+                    Object.entries(char.templates).map(
+                        ([key, stored]) => [
+                            key,
+                            storedToTemplate(stored as StoredTemplate),
+                        ]
+                    )
+                )
+                : undefined,
+            bio: char.bio,
+            messageExamples: char.messageExamples || undefined,
+            postExamples: char.postExamples || undefined,
+            topics: char.topics || undefined,
+            adjectives: char.adjectives || undefined,
+            knowledge: char.knowledge || undefined,
+            plugins: char.plugins || undefined,
+            settings: char.settings || undefined,
+            style: char.style || undefined,
+        };
+    }
+
+    async updateCharacter(id: UUID, updates: Partial<Character>): Promise<void> {
         return this.withDatabase(async () => {
             try {
                 await this.db.transaction(async (tx) => {
@@ -1612,16 +1628,16 @@ export abstract class BaseDrizzleAdapter<TDatabase extends DrizzleOperations>
                     await tx
                         .update(characterTable)
                         .set(updateData)
-                        .where(eq(characterTable.name, name));
+                        .where(eq(characterTable.id, id));
                 });
     
                 logger.debug("Character updated successfully:", {
-                    name,
+                    id,
                     updatedFields: Object.keys(updates),
                 });
             } catch (error) {
                 logger.error("Failed to update character:", {
-                    name,
+                    id,
                     error: error instanceof Error ? error.message : String(error),
                     updatedFields: Object.keys(updates),
                 });
@@ -1630,15 +1646,20 @@ export abstract class BaseDrizzleAdapter<TDatabase extends DrizzleOperations>
         });
     }
 
-    async removeCharacter(name: string): Promise<void> {
+    async removeCharacter(id: UUID): Promise<void> {
         return this.withDatabase(async () => {
-            await this.db.transaction(async (tx) => {
-                await tx
+            try {
+                await this.db
                     .delete(characterTable)
-                    .where(eq(characterTable.name, name));
-
-                logger.debug("Character removed successfully:", { name });
-            });
+                    .where(eq(characterTable.id, id));
+                logger.debug("Character removed successfully:", { id });
+            } catch (error) {
+                logger.error("Failed to remove character:", {
+                    id,
+                    error: error instanceof Error ? error.message : String(error),
+                });
+                throw error;
+            }
         });
     }
 

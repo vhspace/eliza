@@ -576,19 +576,46 @@ export class AgentRuntime implements IAgentRuntime {
         const agent = await this.databaseAdapter.getAgent(this.agentId);
         if (!agent) {
             // find a character that has the same name as the agent id
-            const character = await this.databaseAdapter.getCharacter(this.character.name);
-            let characterId = character?.id;
-            if(character && !characterId) {
+            const character = await this.databaseAdapter.getCharacterByName(this.character.name);
+            let characterId: UUID;
+            
+            if (character) {
+                // If character exists, use its ID or generate a new one
+                characterId = character.id || uuidv4() as UUID;
+                if (!character.id) {
+                    // Update existing character with new ID
+                    await this.databaseAdapter.updateCharacter(characterId, {...character, id: characterId});
+                }
+            } else {
+                // Create new character with generated ID
                 characterId = uuidv4() as UUID;
-                // save the character with the new id
-                await this.databaseAdapter.updateCharacter(character.name, {...character, id: characterId});
-            } else if(!character) {
-                characterId = await this.databaseAdapter.createCharacter(this.character) as UUID;
+                await this.databaseAdapter.createCharacter({...this.character, id: characterId});
             }
             
-            const out = {id: this.agentId, characterId, enabled: true}
-
+            // Create agent with character reference
+            const out = {id: this.agentId, characterId, enabled: true};
             await this.databaseAdapter.createAgent(out);
+
+            // Update runtime's character with ID
+            this.character.id = characterId;
+        } else {
+            // If agent exists, ensure runtime's character has the correct ID
+            const character = await this.databaseAdapter.getCharacter(agent.characterId);
+            if (character) {
+                this.character.id = character.id;
+            }
+        }
+    }
+
+    async ensureCharacterExists(character: Character): Promise<void> {
+        const characterExists = await this.databaseAdapter.getCharacterByName(character.name);
+        if (!characterExists) {
+            logger.log(`[AgentRuntime][${this.character.name}] Creating character`);
+            const characterId = uuidv4() as UUID;
+            await this.databaseAdapter.createCharacter({...character, id: characterId});
+            character.id = characterId;
+        } else {
+            character.id = characterExists.id;
         }
     }
 
@@ -1597,14 +1624,6 @@ export class AgentRuntime implements IAgentRuntime {
         }
     }
 
-    async ensureCharacterExists(character: Character): Promise<void> {
-        const characterExists = await this.databaseAdapter.getCharacter(character.name);
-        if (!characterExists) {
-            logger.log(`[AgentRuntime][${this.character.name}] Creating character`);
-            await this.databaseAdapter.createCharacter(character);
-        }
-    }
-
     async ensureEmbeddingDimension() {
         logger.log(`[AgentRuntime][${this.character.name}] Starting ensureEmbeddingDimension`);
         
@@ -1633,8 +1652,6 @@ export class AgentRuntime implements IAgentRuntime {
             throw error;
         }
     }
-
-
 
     registerTask(task: Task): UUID {
         // if task doesn't have an id, generate one
