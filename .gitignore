@@ -94,3 +94,4 @@ packages/*/dist/*
 **lock**
 
 *pglite*
+packages/client/tsconfig.app.tsbuildinfo
