@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Web3 URL Personal Data Sharing Demo</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      padding-top: 20px;
+      padding-bottom: 40px;
+    }
+    .nav-tabs {
+      margin-bottom: 20px;
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    #message {
+      display: none;
+      margin: 15px 0;
+    }
+    #walletInfo {
+      margin-bottom: 20px;
+    }
+    pre {
+      background-color: #f8f9fa;
+      padding: 10px;
+      border-radius: 4px;
+    }
+    .url-display {
+      word-break: break-all;
+      margin-top: 10px;
+      font-family: monospace;
+      background-color: #f8f9fa;
+      padding: 10px;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Web3 URL Personal Data Sharing Demo</h1>
+    
+    <div id="walletInfo" class="alert alert-info">
+      <p><strong>Wallet:</strong> <span id="walletAddress">Not connected</span></p>
+      <p><strong>Balance:</strong> <span id="walletBalance">0</span> ETH</p>
+      <p><strong>Web3 Domain:</strong> <span id="web3Domain">Not available</span></p>
+    </div>
+    
+    <div id="message" class="alert">Message here</div>
+    
+    <ul class="nav nav-tabs" id="myTabs" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile" type="button" role="tab">Profile Data</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="share-tab" data-bs-toggle="tab" data-bs-target="#share" type="button" role="tab">Share Data</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="view-tab" data-bs-toggle="tab" data-bs-target="#view" type="button" role="tab">View Shared Data</button>
+      </li>
+    </ul>
+    
+    <div class="tab-content" id="myTabContent">
+      <!-- Profile Data Tab -->
+      <div class="tab-pane fade show active" id="profile" role="tabpanel" aria-labelledby="profile-tab">
+        <h3>Your Personal Information</h3>
+        <p>Upload your personal data in different categories using web3 URLs.</p>
+        
+        <form id="uploadForm">
+          <div class="form-group">
+            <label for="category">Category:</label>
+            <select class="form-control" id="category">
+              <option value="PERSONAL_INFO">Personal Information</option>
+              <option value="CONTACT_INFO">Contact Information</option>
+              <option value="INTERESTS">Interests & Hobbies</option>
+              <option value="TRAVEL_HISTORY">Travel History</option>
+              <option value="EDUCATION">Education</option>
+              <option value="WORK_HISTORY">Work Experience</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label for="dataContent">Data (JSON format):</label>
+            <textarea class="form-control" id="dataContent" rows="8" placeholder='{
+  "name": "John Doe",
+  "age": 30,
+  "gender": "male"
+}'></textarea>
+          </div>
+          
+          <button type="submit" class="btn btn-primary">Upload Data</button>
+        </form>
+        
+        <div id="uploadResult" style="display: none; margin-top: 20px;">
+          <h4>Upload Successful</h4>
+          <p>Your data has been registered and can be accessed at:</p>
+          <div class="url-display" id="contentUrl"></div>
+          <p><strong>Content Key:</strong> <span id="contentKey"></span></p>
+          <p class="text-muted">Note: In this demo, content is simulated and not actually uploaded to the URL.</p>
+        </div>
+        
+        <hr>
+        
+        <h4>Your Uploaded Categories</h4>
+        <div id="uploadedCategories">
+          <p>Loading your data categories...</p>
+        </div>
+      </div>
+      
+      <!-- Share Data Tab -->
+      <div class="tab-pane fade" id="share" role="tabpanel" aria-labelledby="share-tab">
+        <h3>Share Your Data</h3>
+        <p>Grant access to your data for specific users.</p>
+        
+        <form id="shareForm">
+          <div class="form-group">
+            <label for="viewerAddress">Viewer Ethereum Address:</label>
+            <input type="text" class="form-control" id="viewerAddress" placeholder="0x...">
+          </div>
+          
+          <div class="form-group">
+            <label for="shareCategory">Category to Share:</label>
+            <select class="form-control" id="shareCategory">
+              <!-- Will be populated from your categories -->
+              <option value="">Loading categories...</option>
+            </select>
+          </div>
+          
+          <button type="submit" class="btn btn-primary">Grant Access</button>
+        </form>
+      </div>
+      
+      <!-- View Shared Data Tab -->
+      <div class="tab-pane fade" id="view" role="tabpanel" aria-labelledby="view-tab">
+        <h3>View Shared Data</h3>
+        <p>Access data that has been shared with you by other users.</p>
+        
+        <form id="viewForm">
+          <div class="form-group">
+            <label for="ownerAddress">Data Owner Address:</label>
+            <input type="text" class="form-control" id="ownerAddress" placeholder="0x...">
+          </div>
+          
+          <div class="form-group">
+            <label for="viewCategory">Category to View:</label>
+            <select class="form-control" id="viewCategory">
+              <option value="PERSONAL_INFO">Personal Information</option>
+              <option value="CONTACT_INFO">Contact Information</option>
+              <option value="INTERESTS">Interests & Hobbies</option>
+              <option value="TRAVEL_HISTORY">Travel History</option>
+              <option value="EDUCATION">Education</option>
+              <option value="WORK_HISTORY">Work Experience</option>
+            </select>
+          </div>
+          
+          <button type="submit" class="btn btn-primary">View Data</button>
+        </form>
+        
+        <div id="sharedDataResult" class="mt-4" style="display: none;">
+          <h4>Shared Data</h4>
+          <div id="contentUrlDisplay" class="url-display mb-3"></div>
+          <pre id="sharedDataContent"></pre>
+          <p class="simulated-note text-muted" style="display: none;">Note: This is simulated data for demonstration purposes.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // API endpoints
+    const API = {
+      health: '/api/health',
+      wallet: '/api/wallet',
+      data: '/api/data',
+      share: '/api/share',
+      categories: '/api/categories',
+      shared: (owner, category) => `/api/shared/${owner}/${category}`
+    };
+    
+    // Show message function
+    function showMessage(message, type = 'info') {
+      const messageEl = document.getElementById('message');
+      messageEl.textContent = message;
+      messageEl.className = `alert alert-${type}`;
+      messageEl.style.display = 'block';
+      
+      // Hide after 5 seconds
+      setTimeout(() => {
+        messageEl.style.display = 'none';
+      }, 5000);
+    }
+    
+    // Load wallet info
+    async function loadWalletInfo() {
+      try {
+        const response = await fetch(API.wallet);
+        const data = await response.json();
+        
+        document.getElementById('walletAddress').textContent = data.address;
+        document.getElementById('walletBalance').textContent = parseFloat(data.balance).toFixed(4);
+        document.getElementById('web3Domain').textContent = data.web3Domain || 'Not available';
+      } catch (error) {
+        showMessage('Failed to load wallet: ' + error.message, 'danger');
+      }
+    }
+    
+    // Load user categories
+    async function loadUserCategories() {
+      try {
+        const response = await fetch(API.categories);
+        const data = await response.json();
+        
+        const categoriesEl = document.getElementById('uploadedCategories');
+        const shareCategoryEl = document.getElementById('shareCategory');
+        
+        // Clear previous options
+        shareCategoryEl.innerHTML = '';
+        
+        if (data.categories && data.categories.length > 0) {
+          // Update uploadedCategories
+          categoriesEl.innerHTML = '<ul class="list-group">';
+          data.categories.forEach(cat => {
+            categoriesEl.innerHTML += `<li class="list-group-item">${cat.name}</li>`;
+            
+            // Add to share select
+            const option = document.createElement('option');
+            option.value = cat.id;
+            option.textContent = cat.name;
+            shareCategoryEl.appendChild(option);
+          });
+          categoriesEl.innerHTML += '</ul>';
+        } else {
+          categoriesEl.innerHTML = '<p>No data categories uploaded yet.</p>';
+          shareCategoryEl.innerHTML = '<option value="">No categories available</option>';
+        }
+      } catch (error) {
+        showMessage('Failed to load categories: ' + error.message, 'danger');
+      }
+    }
+    
+    // Upload data
+    document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const category = document.getElementById('category').value;
+      const dataContent = document.getElementById('dataContent').value;
+      
+      // Validate JSON
+      let dataObj;
+      try {
+        dataObj = JSON.parse(dataContent);
+      } catch (error) {
+        return showMessage('Invalid JSON data: ' + error.message, 'danger');
+      }
+      
+      try {
+        const response = await fetch(API.data, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            category,
+            data: dataObj
+          })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+          showMessage(`Data registered successfully!`, 'success');
+          
+          // Display the content URL
+          document.getElementById('contentUrl').textContent = result.fullUrl;
+          document.getElementById('contentKey').textContent = result.contentKey;
+          document.getElementById('uploadResult').style.display = 'block';
+          
+          // Reload categories
+          await loadUserCategories();
+        } else {
+          showMessage('Failed to upload: ' + (result.error || 'Unknown error'), 'danger');
+        }
+      } catch (error) {
+        showMessage('Error: ' + error.message, 'danger');
+      }
+    });
+    
+    // Share data
+    document.getElementById('shareForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const viewerAddress = document.getElementById('viewerAddress').value;
+      const category = document.getElementById('shareCategory').value;
+      
+      if (!viewerAddress || !category) {
+        return showMessage('Please enter viewer address and select a category', 'warning');
+      }
+      
+      try {
+        const response = await fetch(API.share, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            viewerAddress,
+            category
+          })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+          showMessage(`Access granted to ${viewerAddress}`, 'success');
+        } else {
+          showMessage('Failed to share: ' + (result.error || 'Unknown error'), 'danger');
+        }
+      } catch (error) {
+        showMessage('Error: ' + error.message, 'danger');
+      }
+    });
+    
+    // View shared data
+    document.getElementById('viewForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const ownerAddress = document.getElementById('ownerAddress').value;
+      const category = document.getElementById('viewCategory').value;
+      
+      if (!ownerAddress) {
+        return showMessage('Please enter owner address', 'warning');
+      }
+      
+      try {
+        const response = await fetch(API.shared(ownerAddress, category));
+        const result = await response.json();
+        
+        if (result.success) {
+          // Display URL
+          document.getElementById('contentUrlDisplay').textContent = result.contentUrl || 'URL not available';
+          
+          // Display data
+          document.getElementById('sharedDataContent').textContent = JSON.stringify(result.data, null, 2);
+          document.getElementById('sharedDataResult').style.display = 'block';
+          
+          // Check if simulated
+          const simulatedNote = document.querySelector('.simulated-note');
+          if (result.simulated) {
+            simulatedNote.style.display = 'block';
+          } else {
+            simulatedNote.style.display = 'none';
+          }
+        } else {
+          showMessage('Failed to retrieve data: ' + (result.error || 'Unknown error'), 'danger');
+        }
+      } catch (error) {
+        showMessage('Error: ' + error.message, 'danger');
+      }
+    });
+    
+    // Initialize
+    async function init() {
+      await loadWalletInfo();
+      await loadUserCategories();
+    }
+    
+    // Start the app
+    document.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html> 

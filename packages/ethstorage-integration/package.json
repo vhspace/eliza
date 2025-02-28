@@ -1,0 +1,33 @@
+{
+  "name": "@elizaos/ethstorage-integration",
+  "version": "0.1.0",
+  "description": "EthStorage integration for ElizaOS",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf dist",
+    "test": "vitest run"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "ethers": "^6.13.5",
+    "ethstorage-sdk": "3.0.0",
+    "node-fetch": "2",
+    "web3": "^4.16.0"
+  },
+  "peerDependencies": {
+    "@elizaos/core": "workspace:*"
+  },
+  "devDependencies": {
+    "ts-node": "10.9.2",
+    "typescript": "5.6.3",
+    "vitest": "3.0.5"
+  }
+}

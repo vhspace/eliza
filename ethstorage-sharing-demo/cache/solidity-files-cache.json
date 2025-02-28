@@ -1,0 +1,40 @@
+{
+  "_format": "hh-sol-cache-2",
+  "files": {
+    "/Users/ballew/Documents/repos/github.com/eliza/ethstorage-sharing-demo/contracts/PersonalDataRegistry.sol": {
+      "lastModificationDate": 1740701136598,
+      "contentHash": "96f77c63d608000b985c3c6abb7325c1",
+      "sourceName": "contracts/PersonalDataRegistry.sol",
+      "solcConfig": {
+        "version": "0.8.19",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.17"
+      ],
+      "artifacts": [
+        "PersonalDataRegistry"
+      ]
+    }
+  }
+}
