@@ -44,11 +44,26 @@
     
     <div id="walletInfo" class="alert alert-info">
       <p><strong>Wallet:</strong> <span id="walletAddress">Not connected</span></p>
-      <p><strong>Balance:</strong> <span id="walletBalance">0</span> ETH</p>
+      <p><strong>Balance:</strong> <span id="walletBalance">0</span> QKC</p>
       <p><strong>Web3 Domain:</strong> <span id="web3Domain">Not available</span></p>
     </div>
     
     <div id="message" class="alert">Message here</div>
+    
+    <!-- Global loading indicator -->
+    <div id="loadingIndicator" style="display: none;" class="alert alert-warning">
+      <div class="d-flex align-items-center">
+        <div class="spinner-border spinner-border-sm me-2" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+        <span id="loadingText">Processing blockchain transaction...</span>
+      </div>
+    </div>
+    
+    <!-- Data source indicator -->
+    <div id="dataSourceIndicator" style="display: none;" class="alert alert-info mb-3">
+      <strong>Data Source:</strong> <span id="dataSourceText">Unknown</span>
+    </div>
     
     <ul class="nav nav-tabs" id="myTabs" role="tablist">
       <li class="nav-item" role="presentation">
@@ -79,6 +94,11 @@
               <option value="EDUCATION">Education</option>
               <option value="WORK_HISTORY">Work Experience</option>
             </select>
+            <div class="mt-2">
+              <button type="button" id="loadCategoryDataBtn" class="btn btn-sm btn-outline-secondary">
+                Load Current Data for Category
+              </button>
+            </div>
           </div>
           
           <div class="form-group">
@@ -88,6 +108,17 @@
   "age": 30,
   "gender": "male"
 }'></textarea>
+            <div class="mt-2">
+              <small class="text-muted">Quick fill templates:</small>
+              <div class="btn-group btn-group-sm mt-1">
+                <button type="button" class="btn btn-outline-secondary" data-template="personal">Personal Info</button>
+                <button type="button" class="btn btn-outline-secondary" data-template="contact">Contact</button>
+                <button type="button" class="btn btn-outline-secondary" data-template="interests">Interests</button>
+                <button type="button" class="btn btn-outline-secondary" data-template="travel">Travel</button>
+                <button type="button" class="btn btn-outline-secondary" data-template="education">Education</button>
+                <button type="button" class="btn btn-outline-secondary" data-template="work">Work</button>
+              </div>
+            </div>
           </div>
           
           <button type="submit" class="btn btn-primary">Upload Data</button>
@@ -98,12 +129,18 @@
           <p>Your data has been registered and can be accessed at:</p>
           <div class="url-display" id="contentUrl"></div>
           <p><strong>Content Key:</strong> <span id="contentKey"></span></p>
-          <p class="text-muted">Note: In this demo, content is simulated and not actually uploaded to the URL.</p>
+          <p class="text-muted">Note: Data is stored securely on EthStorage.</p>
         </div>
         
         <hr>
         
         <h4>Your Uploaded Categories</h4>
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <span class="text-muted">Click on a category to load its data</span>
+          <button id="refreshCategoriesBtn" class="btn btn-sm btn-outline-secondary">
+            <span class="d-inline-block me-1">↻</span> Refresh
+          </button>
+        </div>
         <div id="uploadedCategories">
           <p>Loading your data categories...</p>
         </div>
@@ -163,6 +200,39 @@
           <div id="contentUrlDisplay" class="url-display mb-3"></div>
           <pre id="sharedDataContent"></pre>
           <p class="simulated-note text-muted" style="display: none;">Note: This is simulated data for demonstration purposes.</p>
+          
+          <!-- Debug URLs section -->
+          <div id="debugUrlsSection" style="display: none;" class="mt-3">
+            <h5>Alternative Access URLs</h5>
+            <p class="text-muted">If the main URL returns a 400 error, try these alternative formats:</p>
+            <div id="alternativeUrlDisplay" class="url-display mb-2"></div>
+            <div id="apiUrlDisplay" class="url-display"></div>
+            
+            <div class="mt-3">
+              <button type="button" id="verifyContentBtn" class="btn btn-sm btn-outline-primary">
+                Verify Content Availability
+              </button>
+              <button type="button" id="openExternalLinks" class="btn btn-sm btn-outline-secondary ms-2">
+                Try All Links (New Tabs)
+              </button>
+              <button type="button" id="advancedDebugBtn" class="btn btn-sm btn-outline-danger ms-2">
+                Advanced URL Debugging
+              </button>
+            </div>
+          </div>
+          
+          <!-- Verification results -->
+          <div id="verificationResults" style="display: none;" class="mt-3 alert alert-secondary">
+            <h5>Content Verification Results</h5>
+            <div id="verificationStatus"></div>
+            <pre id="verificationDetails" style="font-size: 0.8rem; max-height: 200px; overflow-y: auto;"></pre>
+          </div>
+          
+          <!-- Troubleshooting tips -->
+          <div id="troubleshootingTips" style="display: none;" class="mt-3 alert alert-info">
+            <h5>Troubleshooting Tips</h5>
+            <ul id="troubleshootingList"></ul>
+          </div>
         </div>
       </div>
     </div>
@@ -177,8 +247,87 @@
       data: '/api/data',
       share: '/api/share',
       categories: '/api/categories',
-      shared: (owner, category) => `/api/shared/${owner}/${category}`
+      shared: (owner, category) => `/api/shared/${owner}/${category}`,
+      verify: (contentKey) => `/api/verify/${contentKey}`,
+      debugUrl: (contentKey, owner) => `/api/debug/url?contentKey=${encodeURIComponent(contentKey)}${owner ? `&owner=${encodeURIComponent(owner)}` : ''}`,
+      categoryData: (category) => `/api/mydata/${category}`
     };
+    
+    // Template data for quick fill
+    const templateData = {
+      personal: {
+        "name": "John Doe",
+        "age": 30,
+        "gender": "Male",
+        "birthdate": "1993-05-15",
+        "nationality": "American"
+      },
+      contact: {
+        "email": "john.doe@example.com",
+        "phone": "+1-555-123-4567",
+        "address": "123 Main Street, Anytown, USA",
+        "preferred_contact": "email"
+      },
+      interests: {
+        "hobbies": ["Reading", "Hiking", "Photography", "Cooking"],
+        "favorite_genres": ["Science Fiction", "Biography"],
+        "sports": ["Tennis", "Swimming"]
+      },
+      travel: {
+        "visited_countries": ["France", "Japan", "Canada", "Italy"],
+        "favorite_destination": "Kyoto, Japan",
+        "planned_trips": ["New Zealand", "Iceland"],
+        "travel_style": "Adventure"
+      },
+      education: {
+        "highest_degree": "Master's Degree",
+        "major": "Computer Science",
+        "university": "Stanford University",
+        "graduation_year": 2018,
+        "certifications": ["AWS Certified Developer", "TensorFlow Developer"]
+      },
+      work: {
+        "current_position": "Senior Software Engineer",
+        "company": "Tech Innovations Inc.",
+        "years_experience": 7,
+        "skills": ["JavaScript", "TypeScript", "React", "Node.js", "AWS"],
+        "previous_roles": ["Full Stack Developer", "Frontend Engineer"]
+      }
+    };
+    
+    // Loading indicator functions
+    function showLoading(text = "Processing blockchain transaction...") {
+      document.getElementById('loadingText').textContent = text;
+      document.getElementById('loadingIndicator').style.display = 'block';
+    }
+    
+    function hideLoading() {
+      document.getElementById('loadingIndicator').style.display = 'none';
+    }
+    
+    // Quick fill template buttons
+    document.querySelectorAll('[data-template]').forEach(button => {
+      button.addEventListener('click', () => {
+        const template = button.getAttribute('data-template');
+        if (templateData[template]) {
+          document.getElementById('dataContent').value = JSON.stringify(templateData[template], null, 2);
+          
+          // Also set the matching category in the dropdown
+          const categoryMap = {
+            'personal': 'PERSONAL_INFO',
+            'contact': 'CONTACT_INFO',
+            'interests': 'INTERESTS',
+            'travel': 'TRAVEL_HISTORY',
+            'education': 'EDUCATION',
+            'work': 'WORK_HISTORY'
+          };
+          
+          if (categoryMap[template]) {
+            document.getElementById('category').value = categoryMap[template];
+          }
+        }
+      });
+    });
     
     // Show message function
     function showMessage(message, type = 'info') {
@@ -220,10 +369,17 @@
         shareCategoryEl.innerHTML = '';
         
         if (data.categories && data.categories.length > 0) {
-          // Update uploadedCategories
+          // Update uploadedCategories with clickable items
           categoriesEl.innerHTML = '<ul class="list-group">';
           data.categories.forEach(cat => {
-            categoriesEl.innerHTML += `<li class="list-group-item">${cat.name}</li>`;
+            categoriesEl.innerHTML += `
+              <li class="list-group-item d-flex justify-content-between align-items-center">
+                ${cat.name}
+                <button class="btn btn-sm btn-outline-primary view-category-btn" data-category="${cat.id}">
+                  View Data
+                </button>
+              </li>
+            `;
             
             // Add to share select
             const option = document.createElement('option');
@@ -232,13 +388,153 @@
             shareCategoryEl.appendChild(option);
           });
           categoriesEl.innerHTML += '</ul>';
+          
+          // Add event listeners to the view buttons
+          document.querySelectorAll('.view-category-btn').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+              const category = e.target.getAttribute('data-category');
+              await loadCategoryData(category);
+              
+              // Switch to the profile tab
+              document.getElementById('profile-tab').click();
+              
+              // Set the category dropdown to the selected category
+              document.getElementById('category').value = category;
+            });
+          });
         } else {
           categoriesEl.innerHTML = '<p>No data categories uploaded yet.</p>';
           shareCategoryEl.innerHTML = '<option value="">No categories available</option>';
         }
       } catch (error) {
+        console.error('Error loading categories:', error);
+        categoriesEl.innerHTML = `<p class="text-danger">Error loading categories: ${error.message}</p>`;
         showMessage('Failed to load categories: ' + error.message, 'danger');
       }
+    }
+    
+    // Show data source indicator
+    function showDataSource(source, note) {
+      const dataSourceIndicator = document.getElementById('dataSourceIndicator');
+      const dataSourceText = document.getElementById('dataSourceText');
+      
+      let sourceText = 'Unknown';
+      let sourceClass = 'info';
+      
+      switch (source) {
+        case 'ethstorage':
+          sourceText = 'Loaded from EthStorage (on-chain)';
+          sourceClass = 'success';
+          break;
+        case 'web3url':
+          sourceText = 'Loaded from Web3 URL';
+          sourceClass = 'primary';
+          break;
+        case 'mock':
+          sourceText = 'Using mock data (no on-chain data found)';
+          sourceClass = 'warning';
+          break;
+        default:
+          sourceText = `Loaded from ${source}`;
+      }
+      
+      if (note) {
+        sourceText += ` - ${note}`;
+      }
+      
+      dataSourceText.textContent = sourceText;
+      dataSourceIndicator.className = `alert alert-${sourceClass} mb-3`;
+      dataSourceIndicator.style.display = 'block';
+      
+      // Hide after 10 seconds
+      setTimeout(() => {
+        dataSourceIndicator.style.display = 'none';
+      }, 10000);
+    }
+    
+    // Load data for a specific category
+    async function loadCategoryData(categoryId) {
+      showLoading('Loading category data...');
+      
+      try {
+        // First try using the dedicated mydata endpoint
+        try {
+          const response = await fetch(API.categoryData(categoryId));
+          const result = await response.json();
+          
+          if (result.success) {
+            // Fill the data content textarea
+            document.getElementById('dataContent').value = JSON.stringify(result.data, null, 2);
+            
+            // Select the category in the dropdown
+            document.getElementById('category').value = categoryId;
+            
+            hideLoading();
+            showMessage(`Loaded data for category: ${categoryId}`, 'success');
+            
+            // Show data source indicator
+            showDataSource(result.retrievedFrom, result.note);
+            return;
+          } else {
+            console.warn('mydata endpoint returned success: false:', result.error);
+          }
+        } catch (myDataError) {
+          console.warn('Failed to use mydata endpoint, falling back to shared endpoint:', myDataError);
+        }
+        
+        // Fall back to the shared endpoint
+        const walletAddress = document.getElementById('walletAddress').textContent;
+        
+        if (!walletAddress || walletAddress === 'Not connected') {
+          hideLoading();
+          return showMessage('Wallet is not connected', 'warning');
+        }
+        
+        const response = await fetch(API.shared(walletAddress, categoryId));
+        const result = await response.json();
+        
+        hideLoading();
+        
+        if (result.success) {
+          // Fill the data content textarea
+          document.getElementById('dataContent').value = JSON.stringify(result.data, null, 2);
+          
+          // Select the category in the dropdown
+          document.getElementById('category').value = categoryId;
+          
+          showMessage(`Loaded data for category: ${categoryId}`, 'success');
+          
+          // Show data source indicator
+          showDataSource(result.retrievedFrom, result.note);
+        } else {
+          // If we have a simpler category name, use it for nicer display
+          const categoryLabel = getCategoryLabel(categoryId);
+          showMessage(`Failed to load data for ${categoryLabel}: ${result.error || 'Unknown error'}`, 'danger');
+        }
+      } catch (error) {
+        hideLoading();
+        showMessage(`Error loading category data: ${error.message}`, 'danger');
+      }
+    }
+    
+    // Get a display-friendly category label from category ID
+    function getCategoryLabel(categoryId) {
+      const categoryMap = {
+        '0': 'Personal Information',
+        '1': 'Contact Information',
+        '2': 'Interests & Hobbies',
+        '3': 'Travel History',
+        '4': 'Education',
+        '5': 'Work Experience',
+        'PERSONAL_INFO': 'Personal Information',
+        'CONTACT_INFO': 'Contact Information',
+        'INTERESTS': 'Interests & Hobbies',
+        'TRAVEL_HISTORY': 'Travel History',
+        'EDUCATION': 'Education',
+        'WORK_HISTORY': 'Work Experience'
+      };
+      
+      return categoryMap[categoryId] || categoryId;
     }
     
     // Upload data
@@ -257,6 +553,9 @@
       }
       
       try {
+        // Show loading indicator
+        showLoading('Storing data on EthStorage...');
+        
         const response = await fetch(API.data, {
           method: 'POST',
           headers: {
@@ -270,13 +569,21 @@
         
         const result = await response.json();
         
+        // Hide loading indicator
+        hideLoading();
+        
         if (result.success) {
-          showMessage(`Data registered successfully!`, 'success');
+          showMessage(`Data stored successfully!`, 'success');
           
           // Display the content URL
           document.getElementById('contentUrl').textContent = result.fullUrl;
           document.getElementById('contentKey').textContent = result.contentKey;
           document.getElementById('uploadResult').style.display = 'block';
+          
+          // Show data source if available
+          if (result.retrievedFrom) {
+            showDataSource(result.retrievedFrom, result.note);
+          }
           
           // Reload categories
           await loadUserCategories();
@@ -284,6 +591,7 @@
           showMessage('Failed to upload: ' + (result.error || 'Unknown error'), 'danger');
         }
       } catch (error) {
+        hideLoading();
         showMessage('Error: ' + error.message, 'danger');
       }
     });
@@ -300,6 +608,9 @@
       }
       
       try {
+        // Show loading indicator
+        showLoading('Granting access on the blockchain...');
+        
         const response = await fetch(API.share, {
           method: 'POST',
           headers: {
@@ -312,6 +623,9 @@
         });
         
         const result = await response.json();
+        
+        // Hide loading indicator
+        hideLoading();
         
         if (result.success) {
           showMessage(`Access granted to ${viewerAddress}`, 'success');
@@ -335,8 +649,18 @@
       }
       
       try {
+        // Show loading indicator
+        showLoading('Retrieving shared data...');
+        
         const response = await fetch(API.shared(ownerAddress, category));
         const result = await response.json();
+        
+        // Hide loading indicator
+        hideLoading();
+        
+        // Store these for verification
+        window.currentContentKey = result.contentKey;
+        window.currentDebugUrls = result.debugUrls;
         
         if (result.success) {
           // Display URL
@@ -346,18 +670,355 @@
           document.getElementById('sharedDataContent').textContent = JSON.stringify(result.data, null, 2);
           document.getElementById('sharedDataResult').style.display = 'block';
           
+          // Show data source indicator
+          if (result.retrievedFrom) {
+            showDataSource(result.retrievedFrom, result.note);
+          }
+          
           // Check if simulated
           const simulatedNote = document.querySelector('.simulated-note');
-          if (result.simulated) {
+          if (result.simulated || result.retrievedFrom === 'mock') {
             simulatedNote.style.display = 'block';
+            simulatedNote.textContent = result.note || 'Note: This is simulated data for demonstration purposes.';
           } else {
             simulatedNote.style.display = 'none';
           }
+          
+          // Display debug URLs if available
+          const debugUrlsSection = document.getElementById('debugUrlsSection');
+          if (result.debugUrls) {
+            debugUrlsSection.style.display = 'block';
+            
+            if (result.debugUrls.alternativeUrl) {
+              document.getElementById('alternativeUrlDisplay').textContent = result.debugUrls.alternativeUrl;
+            }
+            
+            if (result.debugUrls.apiUrl) {
+              document.getElementById('apiUrlDisplay').textContent = result.debugUrls.apiUrl;
+            }
+          } else {
+            debugUrlsSection.style.display = 'none';
+          }
+          
+          // Hide troubleshooting tips
+          document.getElementById('troubleshootingTips').style.display = 'none';
+          
+          // Hide verification results
+          document.getElementById('verificationResults').style.display = 'none';
         } else {
           showMessage('Failed to retrieve data: ' + (result.error || 'Unknown error'), 'danger');
+          
+          // Still show the URL that failed
+          if (result.contentUrl) {
+            document.getElementById('contentUrlDisplay').textContent = result.contentUrl;
+            document.getElementById('sharedDataResult').style.display = 'block';
+            document.getElementById('sharedDataContent').textContent = 'Data could not be retrieved.';
+          }
+          
+          // Display debug URLs if available
+          const debugUrlsSection = document.getElementById('debugUrlsSection');
+          if (result.debugUrls) {
+            debugUrlsSection.style.display = 'block';
+            
+            if (result.debugUrls.alternativeUrl) {
+              document.getElementById('alternativeUrlDisplay').textContent = result.debugUrls.alternativeUrl;
+            }
+            
+            if (result.debugUrls.apiUrl) {
+              document.getElementById('apiUrlDisplay').textContent = result.debugUrls.apiUrl;
+            }
+          }
+          
+          // Display troubleshooting tips if available
+          const troubleshootingTips = document.getElementById('troubleshootingTips');
+          const troubleshootingList = document.getElementById('troubleshootingList');
+          
+          if (result.troubleshooting && result.troubleshooting.length > 0) {
+            troubleshootingTips.style.display = 'block';
+            troubleshootingList.innerHTML = '';
+            
+            result.troubleshooting.forEach(tip => {
+              const li = document.createElement('li');
+              li.textContent = tip;
+              troubleshootingList.appendChild(li);
+            });
+          } else {
+            troubleshootingTips.style.display = 'none';
+          }
         }
       } catch (error) {
+        hideLoading();
         showMessage('Error: ' + error.message, 'danger');
+      }
+    });
+    
+    // Content verification
+    document.getElementById('verifyContentBtn')?.addEventListener('click', async () => {
+      if (!window.currentContentKey) {
+        return showMessage('No content key available to verify', 'warning');
+      }
+      
+      try {
+        showLoading('Verifying content availability...');
+        
+        const verificationResults = document.getElementById('verificationResults');
+        const verificationStatus = document.getElementById('verificationStatus');
+        const verificationDetails = document.getElementById('verificationDetails');
+        
+        verificationResults.style.display = 'block';
+        verificationStatus.innerHTML = '<div class="spinner-border spinner-border-sm me-2" role="status"></div> Checking content availability...';
+        
+        const response = await fetch(API.verify(window.currentContentKey));
+        const result = await response.json();
+        
+        hideLoading();
+        
+        if (result.success) {
+          verificationStatus.innerHTML = `
+            <div class="alert alert-success">
+              <strong>Content found!</strong> Successfully retrieved via ${result.source}
+            </div>
+          `;
+          
+          // Show the data we retrieved
+          document.getElementById('sharedDataContent').textContent = JSON.stringify(result.data, null, 2);
+        } else {
+          verificationStatus.innerHTML = `
+            <div class="alert alert-danger">
+              <strong>Content not found</strong> - The content could not be retrieved from any source.
+            </div>
+          `;
+          
+          // Display troubleshooting suggestions
+          if (result.possibleReasons && result.possibleReasons.length > 0) {
+            const troubleshootingTips = document.getElementById('troubleshootingTips');
+            const troubleshootingList = document.getElementById('troubleshootingList');
+            
+            troubleshootingTips.style.display = 'block';
+            troubleshootingList.innerHTML = '';
+            
+            // Add possible reasons
+            troubleshootingList.innerHTML += '<li class="fw-bold">Possible reasons:</li>';
+            result.possibleReasons.forEach(reason => {
+              const li = document.createElement('li');
+              li.textContent = reason;
+              li.style.paddingLeft = '20px';
+              troubleshootingList.appendChild(li);
+            });
+            
+            // Add suggestions
+            if (result.suggestions && result.suggestions.length > 0) {
+              troubleshootingList.innerHTML += '<li class="fw-bold mt-2">Suggestions:</li>';
+              result.suggestions.forEach(suggestion => {
+                const li = document.createElement('li');
+                li.textContent = suggestion;
+                li.style.paddingLeft = '20px';
+                troubleshootingList.appendChild(li);
+              });
+            }
+          }
+        }
+        
+        // Show detailed verification info
+        verificationDetails.textContent = JSON.stringify(result, null, 2);
+        
+      } catch (error) {
+        hideLoading();
+        showMessage('Verification error: ' + error.message, 'danger');
+      }
+    });
+    
+    // Open external links in new tabs
+    document.getElementById('openExternalLinks')?.addEventListener('click', () => {
+      if (!window.currentDebugUrls) return;
+      
+      const urls = [];
+      
+      // Get the main URL from the display
+      const mainUrl = document.getElementById('contentUrlDisplay').textContent;
+      if (mainUrl && mainUrl !== 'URL not available') {
+        urls.push(mainUrl);
+      }
+      
+      // Get alternative URLs
+      if (window.currentDebugUrls.alternativeUrl) {
+        urls.push(window.currentDebugUrls.alternativeUrl);
+      }
+      
+      if (window.currentDebugUrls.apiUrl) {
+        urls.push(window.currentDebugUrls.apiUrl);
+      }
+      
+      // Open each URL in a new tab
+      urls.forEach(url => {
+        if (url && url.startsWith('http')) {
+          window.open(url, '_blank');
+        }
+      });
+      
+      showMessage(`Opened ${urls.length} URLs in new tabs`, 'info');
+    });
+    
+    // Advanced URL debugging
+    document.getElementById('advancedDebugBtn')?.addEventListener('click', async () => {
+      if (!window.currentContentKey) {
+        return showMessage('No content key available to debug', 'warning');
+      }
+      
+      try {
+        showLoading('Running advanced URL debugging...');
+        
+        const ownerAddress = document.getElementById('ownerAddress').value || null;
+        
+        // Create a modal for showing results
+        const modalContainer = document.createElement('div');
+        modalContainer.className = 'modal fade';
+        modalContainer.id = 'debugModal';
+        modalContainer.setAttribute('tabindex', '-1');
+        
+        modalContainer.innerHTML = `
+          <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title">Advanced URL Debugging Results</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                <div class="d-flex justify-content-center">
+                  <div class="spinner-border" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                  </div>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="copyDebugResults">Copy Results</button>
+              </div>
+            </div>
+          </div>
+        `;
+        
+        document.body.appendChild(modalContainer);
+        
+        // Show the modal
+        const debugModal = new bootstrap.Modal(document.getElementById('debugModal'));
+        debugModal.show();
+        
+        // Fetch debug results
+        const response = await fetch(API.debugUrl(window.currentContentKey, ownerAddress));
+        const result = await response.json();
+        
+        // Hide loading indicator
+        hideLoading();
+        
+        // Update modal with results
+        const modalBody = document.querySelector('#debugModal .modal-body');
+        
+        let htmlContent = `
+          <h5>Debug Summary</h5>
+          <div class="alert ${result.recommendedApproach ? 'alert-success' : 'alert-danger'}">
+            <strong>Recommendation:</strong> ${result.recommendedApproach ? result.recommendedApproach.reason : 'No solution found'}
+          </div>
+          
+          <dl class="row">
+            <dt class="col-sm-3">Content Key:</dt>
+            <dd class="col-sm-9"><code>${result.contentKey}</code></dd>
+            
+            <dt class="col-sm-3">Owner Address:</dt>
+            <dd class="col-sm-9"><code>${result.ownerAddress}</code></dd>
+          </dl>
+          
+          <h5>EthStorage Direct Access</h5>
+          <div class="alert alert-${result.ethStorageResult.success ? 'success' : 'danger'}">
+            <strong>Status:</strong> ${result.ethStorageResult.success ? 'Success' : 'Failed'}
+            ${!result.ethStorageResult.success ? `<div><small>${result.ethStorageResult.error}</small></div>` : ''}
+          </div>
+        `;
+        
+        // Add URL results
+        htmlContent += `<h5>URL Format Tests</h5>`;
+        
+        if (result.urlResults && result.urlResults.length > 0) {
+          htmlContent += `<div class="table-responsive"><table class="table table-sm">
+            <thead>
+              <tr>
+                <th>Format</th>
+                <th>Status</th>
+                <th>URL</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>`;
+            
+          result.urlResults.forEach((urlResult, index) => {
+            htmlContent += `
+              <tr>
+                <td>${urlResult.name}</td>
+                <td>
+                  ${urlResult.success 
+                    ? `<span class="badge bg-success">Success</span>` 
+                    : `<span class="badge bg-danger">${urlResult.status || 'Error'}</span>`
+                  }
+                </td>
+                <td><small class="text-muted" style="word-break: break-all;">${urlResult.url}</small></td>
+                <td>
+                  <button type="button" class="btn btn-sm btn-outline-primary open-url-btn" data-url="${urlResult.url}">Open</button>
+                </td>
+              </tr>
+            `;
+          });
+          
+          htmlContent += `</tbody></table></div>`;
+        } else {
+          htmlContent += `<p>No URL tests were performed</p>`;
+        }
+        
+        // Add detailed output
+        htmlContent += `
+          <h5 class="mt-4">Raw Debug Data</h5>
+          <pre style="max-height: 300px; overflow-y: auto;">${JSON.stringify(result, null, 2)}</pre>
+        `;
+        
+        modalBody.innerHTML = htmlContent;
+        
+        // Add event listener for copying results
+        document.getElementById('copyDebugResults')?.addEventListener('click', () => {
+          const debugText = JSON.stringify(result, null, 2);
+          navigator.clipboard.writeText(debugText)
+            .then(() => {
+              showMessage('Debug results copied to clipboard', 'success');
+            })
+            .catch(err => {
+              showMessage('Failed to copy: ' + err, 'danger');
+            });
+        });
+        
+        // Add event listeners for opening URLs
+        document.querySelectorAll('.open-url-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const url = btn.getAttribute('data-url');
+            if (url) {
+              window.open(url, '_blank');
+            }
+          });
+        });
+        
+        // Update the troubleshooting tips if needed
+        if (result.recommendedApproach && result.recommendedApproach.method === 'retry-upload') {
+          const troubleshootingTips = document.getElementById('troubleshootingTips');
+          const troubleshootingList = document.getElementById('troubleshootingList');
+          
+          troubleshootingTips.style.display = 'block';
+          troubleshootingList.innerHTML = `
+            <li>The content couldn't be retrieved with any method. Try uploading the data again.</li>
+            <li>Check the EthStorage connection and configuration.</li>
+            <li>Verify that your wallet has sufficient balance for transactions.</li>
+          `;
+        }
+        
+      } catch (error) {
+        hideLoading();
+        showMessage('URL debugging error: ' + error.message, 'danger');
       }
     });
     
@@ -365,6 +1026,24 @@
     async function init() {
       await loadWalletInfo();
       await loadUserCategories();
+      
+      // Add event listener for loading current category data
+      document.getElementById('loadCategoryDataBtn').addEventListener('click', () => {
+        const selectedCategory = document.getElementById('category').value;
+        if (selectedCategory) {
+          loadCategoryData(selectedCategory);
+        } else {
+          showMessage('Please select a category first', 'warning');
+        }
+      });
+      
+      // Add event listener for refreshing categories
+      document.getElementById('refreshCategoriesBtn').addEventListener('click', async () => {
+        showLoading('Refreshing categories...');
+        await loadUserCategories();
+        hideLoading();
+        showMessage('Categories refreshed', 'success');
+      });
     }
     
     // Start the app

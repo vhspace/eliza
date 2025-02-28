@@ -4,13 +4,18 @@
   "description": "Demo for personal data sharing on EthStorage",
   "main": "index.js",
   "scripts": {
-    "setup": "node scripts/setup.js",
-    "compile": "npx hardhat compile",
-    "deploy": "npx hardhat run scripts/deploy.js --network hardhat",
+    "setup": "echo \"Setting up project...\" && npm install",
+    "compile": "echo \"Compiling contracts...\" && npx hardhat compile",
+    "deploy": "echo \"Deploying contracts...\" && npx hardhat run scripts/deploy.js --network quickchain",
     "deploy-testnet": "npx hardhat run scripts/deploy.js --network quarkchainTestnet",
-    "start": "node scripts/start.js",
-    "test": "npx hardhat test",
-    "demo-test": "node scripts/test.js"
+    "start": "echo \"Starting demo server...\" && node scripts/start.js",
+    "test": "echo \"Running tests...\" && npx hardhat test",
+    "demo-test": "node scripts/test.js",
+    "diagnose": "echo \"Running diagnostic tests...\" && node scripts/run-tests.js",
+    "diagnose:ethstorage": "node scripts/run-tests.js ethstorage",
+    "diagnose:web3url": "node scripts/run-tests.js web3url",
+    "diagnose:access": "node scripts/run-tests.js access",
+    "diagnose:integration": "node scripts/run-tests.js integration"
   },
   "keywords": [
     "ethstorage",
@@ -28,7 +33,9 @@
   "devDependencies": {
     "@nomicfoundation/hardhat-ethers": "^3.0.8",
     "@nomicfoundation/hardhat-toolbox": "^3.0.0",
+    "chai": "^5.2.0",
     "ethers": "^6.13.5",
-    "hardhat": "^2.22.19"
+    "hardhat": "^2.22.19",
+    "mocha": "^11.1.0"
   }
 }
