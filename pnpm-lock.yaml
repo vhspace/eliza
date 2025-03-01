@@ -71,6 +71,9 @@ importers:
       dotenv:
         specifier: 16.3.1
         version: 16.3.1
+      eliza:
+        specifier: github:gelatodigital/eliza-gelato-relay
+        version: https://codeload.github.com/gelatodigital/eliza-gelato-relay/tar.gz/9997da7b005672867dc8d125b51c4020d452e206(@types/react@19.0.10)(@typescript-eslint/utils@8.24.1(eslint@9.21.0(jiti@1.21.7))(typescript@5.6.3))(bufferutil@4.0.9)(encoding@0.1.13)(eslint@9.21.0(jiti@1.21.7))(ethers@6.13.5(bufferutil@4.0.9)(utf-8-validate@5.0.10))(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(typescript@5.6.3)(utf-8-validate@5.0.10)(vitest@3.0.5(@types/debug@4.1.12)(@types/node@22.13.5)(jiti@1.21.7)(terser@5.39.0)(yaml@2.7.0))(zod@3.24.1)
       ethers:
         specifier: ^6.13.5
         version: 6.13.5(bufferutil@4.0.9)(utf-8-validate@5.0.10)
@@ -95,6 +98,9 @@ importers:
       ws:
         specifier: 8.18.0
         version: 8.18.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)
+      yargs:
+        specifier: 17.7.2
+        version: 17.7.2
       zod:
         specifier: 3.24.1
         version: 3.24.1
@@ -7421,6 +7427,11 @@ packages:
 
   electron-to-chromium@1.5.103:
     resolution: {integrity: sha512-P6+XzIkfndgsrjROJWfSvVEgNHtPgbhVyTkwLjUM2HU/h7pZRORgaTlHqfAikqxKmdJMLW8fftrdGWbd/Ds0FA==}
+
+  eliza@https://codeload.github.com/gelatodigital/eliza-gelato-relay/tar.gz/9997da7b005672867dc8d125b51c4020d452e206:
+    resolution: {tarball: https://codeload.github.com/gelatodigital/eliza-gelato-relay/tar.gz/9997da7b005672867dc8d125b51c4020d452e206}
+    version: 0.0.0
+    engines: {node: 23.3.0}
 
   elliptic@6.6.1:
     resolution: {integrity: sha512-RaddvvMatK2LJHqFJ+YA4WysVN5Ita9E35botqIYspQ4TkRAlCicdzKOjlyv/1Za5RyTNn7di//eEV0uTAfe3g==}
@@ -23736,6 +23747,39 @@ snapshots:
       jake: 10.9.2
 
   electron-to-chromium@1.5.103: {}
+
+  eliza@https://codeload.github.com/gelatodigital/eliza-gelato-relay/tar.gz/9997da7b005672867dc8d125b51c4020d452e206(@types/react@19.0.10)(@typescript-eslint/utils@8.24.1(eslint@9.21.0(jiti@1.21.7))(typescript@5.6.3))(bufferutil@4.0.9)(encoding@0.1.13)(eslint@9.21.0(jiti@1.21.7))(ethers@6.13.5(bufferutil@4.0.9)(utf-8-validate@5.0.10))(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(typescript@5.6.3)(utf-8-validate@5.0.10)(vitest@3.0.5(@types/debug@4.1.12)(@types/node@22.13.5)(jiti@1.21.7)(terser@5.39.0)(yaml@2.7.0))(zod@3.24.1):
+    dependencies:
+      optional: 0.1.4
+      '@0glabs/0g-ts-sdk': 0.2.1(bufferutil@4.0.9)(ethers@6.13.5(bufferutil@4.0.9)(utf-8-validate@5.0.10))(utf-8-validate@5.0.10)
+      '@coinbase/coinbase-sdk': 0.10.0(bufferutil@4.0.9)(typescript@5.6.3)(utf-8-validate@5.0.10)(zod@3.24.1)
+      '@deepgram/sdk': 3.11.1(bufferutil@4.0.9)(encoding@0.1.13)(utf-8-validate@5.0.10)
+      '@injectivelabs/sdk-ts': 1.14.41(@types/react@19.0.10)(bufferutil@4.0.9)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(utf-8-validate@5.0.10)
+      '@vitest/eslint-plugin': 1.0.1(@typescript-eslint/utils@8.24.1(eslint@9.21.0(jiti@1.21.7))(typescript@5.6.3))(eslint@9.21.0(jiti@1.21.7))(typescript@5.6.3)(vitest@3.0.5(@types/debug@4.1.12)(@types/node@22.13.5)(jiti@1.21.7)(terser@5.39.0)(yaml@2.7.0))
+      amqplib: 0.10.5
+      bs58: 5.0.0
+      csv-parse: 5.6.0
+      langdetect: 0.2.1
+      ollama-ai-provider: 0.16.1(zod@3.24.1)
+      pnpm: 9.15.0
+      sharp: 0.33.5
+    transitivePeerDependencies:
+      - '@types/react'
+      - '@typescript-eslint/utils'
+      - bufferutil
+      - debug
+      - encoding
+      - eslint
+      - ethers
+      - graphql-ws
+      - react
+      - react-dom
+      - subscriptions-transport-ws
+      - supports-color
+      - typescript
+      - utf-8-validate
+      - vitest
+      - zod
 
   elliptic@6.6.1:
     dependencies:
