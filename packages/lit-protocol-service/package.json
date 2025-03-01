@@ -1,0 +1,30 @@
+{
+  "name": "@elizaos/lit-protocol-service",
+  "version": "1.0.0",
+  "description": "Service for interacting with Lit Protocol and ethstorage",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "start": "ts-node src/index.ts",
+    "test": "jest"
+  },
+  "dependencies": {
+    "@lit-protocol/lit-node-client": "^2.2.0",
+    "@lit-protocol/constants": "^2.2.0",
+    "@lit-protocol/encryption": "^2.2.0",
+    "@lit-protocol/auth-helpers": "^2.2.0",
+    "axios": "^1.6.2",
+    "ethers": "^6.6.0",
+    "dotenv": "^16.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.4.1",
+    "@types/dotenv": "^8.2.0",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.6.3",
+    "jest": "^29.7.0",
+    "@types/jest": "^29.5.11",
+    "ts-jest": "^29.1.1"
+  }
+} 
