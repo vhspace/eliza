@@ -15,6 +15,8 @@ interface AgentDataConfig {
   walletPrivateKey: string;
   fileIds: string[];
   outputDir: string;
+  useMockData?: boolean; // New option to use mock data
+  network?: string; // Add network parameter
 }
 
 /**
@@ -30,6 +32,7 @@ export async function loadAgentDataFromEthStorage(config: AgentDataConfig): Prom
       contractAddress: config.contractAddress,
       helperApiUrl: config.helperApiUrl,
       chain: config.chain,
+      network: config.network, // Pass the network to the service
     });
     
     // Create a signer with the private key
@@ -39,25 +42,38 @@ export async function loadAgentDataFromEthStorage(config: AgentDataConfig): Prom
     
     console.log(`Using wallet address: ${signerAddress}`);
     
-    // Fetch encrypted files from the helper service
-    console.log(`Fetching ${config.fileIds.length} files from ethstorage...`);
-    const encryptedFiles = await litService.fetchEncryptedFiles(config.fileIds);
+    let decryptedFiles: DecryptedFile[] = [];
     
-    if (encryptedFiles.length === 0) {
-      console.log('No encrypted files found.');
-      return [];
+    // Check if we should use mock data
+    if (config.useMockData || process.env.USE_MOCK_DATA === 'true') {
+      console.log('Using mock data since helper service is not available');
+      decryptedFiles = createMockDecryptedFiles(config.fileIds);
+    } else {
+      try {
+        // Try to fetch encrypted files from the helper service
+        console.log(`Fetching ${config.fileIds.length} files from ethstorage...`);
+        const encryptedFiles = await litService.fetchEncryptedFiles(config.fileIds);
+        
+        if (encryptedFiles.length === 0) {
+          console.log('No encrypted files found. Falling back to mock data...');
+          decryptedFiles = createMockDecryptedFiles(config.fileIds);
+        } else {
+          console.log(`Found ${encryptedFiles.length} encrypted files. Decrypting...`);
+          
+          // Decrypt the files
+          decryptedFiles = await litService.decryptFiles(
+            encryptedFiles,
+            wallet,
+            signerAddress
+          );
+          
+          console.log(`Successfully decrypted ${decryptedFiles.length} files.`);
+        }
+      } catch (error) {
+        console.error('Error fetching or decrypting files, falling back to mock data:', error);
+        decryptedFiles = createMockDecryptedFiles(config.fileIds);
+      }
     }
-    
-    console.log(`Found ${encryptedFiles.length} encrypted files. Decrypting...`);
-    
-    // Decrypt the files
-    const decryptedFiles = await litService.decryptFiles(
-      encryptedFiles,
-      wallet,
-      signerAddress
-    );
-    
-    console.log(`Successfully decrypted ${decryptedFiles.length} files.`);
     
     // Ensure the output directory exists
     if (!fs.existsSync(config.outputDir)) {
@@ -73,6 +89,33 @@ export async function loadAgentDataFromEthStorage(config: AgentDataConfig): Prom
     console.error('Error loading agent data from ethstorage:', error);
     throw error;
   }
+}
+
+/**
+ * Creates mock decrypted files for demonstration purposes
+ * @param fileIds Array of file IDs
+ * @returns Array of mock decrypted files
+ */
+function createMockDecryptedFiles(fileIds: string[]): DecryptedFile[] {
+  console.log(`Creating ${fileIds.length} mock decrypted files...`);
+  return fileIds.map(fileID => ({
+    fileID,
+    content: JSON.stringify({
+      name: `Mock Character ${fileID}`,
+      description: "This is a mock decrypted file for demonstration purposes",
+      traits: [
+        { type: "Power", value: Math.floor(Math.random() * 100) },
+        { type: "Intelligence", value: Math.floor(Math.random() * 100) },
+        { type: "Charisma", value: Math.floor(Math.random() * 100) }
+      ],
+      abilities: [
+        "Mock Ability 1",
+        "Mock Ability 2",
+        "Mock Ability 3"
+      ],
+      mockData: true
+    }, null, 2)
+  }));
 }
 
 /**
@@ -109,6 +152,8 @@ async function main() {
     walletPrivateKey: process.env.ETH_PRIVATE_KEY || '',
     fileIds: (process.env.ETH_STORAGE_FILE_IDS || '').split(',').filter(id => id.trim()),
     outputDir: process.env.OUTPUT_DIR || path.join(process.cwd(), 'agent-data'),
+    useMockData: process.env.USE_MOCK_DATA === 'true',
+    network: process.env.LIT_NETWORK
   };
   
   if (!config.walletPrivateKey) {

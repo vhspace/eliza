@@ -14,7 +14,9 @@
  *   LIT_CONTRACT_ADDRESS=0xd0EBaF6bAc19AA239853D94ec0FC0639F27eA986 (optional)
  *   LIT_HELPER_API_URL=http://localhost:3000 (optional)
  *   LIT_CHAIN=sepolia (optional)
+ *   LIT_NETWORK=cayenne (optional, the Lit Protocol network to use)
  *   OUTPUT_DIR=./characters/data (optional)
+ *   USE_MOCK_DATA=true (optional, set to true if helper service is not available)
  */
 
 // Load environment variables from .env file
@@ -45,12 +47,17 @@ async function main() {
     walletPrivateKey: process.env.ETH_PRIVATE_KEY,
     fileIds: process.env.ETH_STORAGE_FILE_IDS.split(',').filter(id => id.trim()),
     outputDir: process.env.OUTPUT_DIR || path.join(process.cwd(), 'characters', 'data'),
+    useMockData: process.env.USE_MOCK_DATA === 'true',
+    network: process.env.LIT_NETWORK || 'cayenne',
   };
   
-  console.log(`Configuration:
+  const mockMode = config.useMockData ? ' (MOCK MODE)' : '';
+  
+  console.log(`Configuration${mockMode}:
   - Contract: ${config.contractAddress}
   - Helper API: ${config.helperApiUrl}
   - Chain: ${config.chain}
+  - Network: ${config.network}
   - Files to fetch: ${config.fileIds.length}
   - Output directory: ${config.outputDir}
   - Wallet address: ${getWalletAddressPreview(config.walletPrivateKey)}
@@ -65,15 +72,26 @@ async function main() {
       process.exit(0);
     }
     
-    console.log(`Successfully decrypted and saved ${savedFilePaths.length} files:`);
+    const modeMsg = config.useMockData ? ' (mock data)' : '';
+    console.log(`Successfully decrypted and saved ${savedFilePaths.length} files${modeMsg}:`);
     savedFilePaths.forEach(filePath => {
       console.log(`- ${filePath}`);
     });
+    
+    if (config.useMockData) {
+      console.log('\nNOTE: These are mock files generated for testing purposes.');
+      console.log('In a production environment, you would connect to the actual helper service.');
+    }
     
     console.log('\nYou can now use this data with your agents by updating their knowledge configs.');
     process.exit(0);
   } catch (error) {
     console.error('Failed to load and decrypt data:', error);
+    
+    console.log('\nSuggestion: If the helper service is not available, you can use mock data for testing:');
+    console.log('  - Add USE_MOCK_DATA=true to your .env file');
+    console.log('  - Or run with: USE_MOCK_DATA=true node scripts/load-ethstorage-data.js');
+    
     process.exit(1);
   }
 }

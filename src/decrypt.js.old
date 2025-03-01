@@ -1,0 +1,242 @@
+require('dotenv').config();
+const { ethers } = require('ethers');
+const fs = require('fs');
+const axios = require('axios');
+const { LitNodeClientNodeJs } = require('@lit-protocol/lit-node-client-nodejs');
+const { decryptToString } = require('@lit-protocol/encryption');
+
+async function main() {
+  try {
+    // Parse command line arguments
+    const args = process.argv.slice(2);
+    const fileUrl = args[0] || '';
+    const outputFilename = args[1] || 'decrypted-file.json';
+    
+    if (!fileUrl) {
+      console.error('Error: File URL is required');
+      console.log('Usage: node decrypt.js <fileUrl> [outputFilename]');
+      process.exit(1);
+    }
+    
+    // Extract info from URL
+    const urlParts = new URL(fileUrl);
+    const hostParts = urlParts.hostname.split('.');
+    const contractAddress = hostParts[0];
+    const fileId = urlParts.pathname.substring(1); // Remove leading slash
+    
+    console.log(`Contract Address: ${contractAddress}`);
+    console.log(`File ID: ${fileId}`);
+    
+    // Load environment variables
+    const privateKey = process.env.WALLET_PRIVATE_KEY;
+    const network = process.env.LIT_NETWORK || 'datil-test';
+    const chain = process.env.CHAIN || 'sepolia';
+    const validationMethod = process.env.VALIDATION_METHOD || 'hasAccess';
+    // Set appropriate RPC URL based on the chain
+    let rpcUrl = process.env.RPC_URL;
+    if (chain === 'quarkchain' && !rpcUrl) {
+      rpcUrl = 'https://rpc.beta.testnet.l2.quarkchain.io:8545/';
+      console.log(`Using QuarkChain testnet RPC: ${rpcUrl}`);
+    }
+    
+    if (!privateKey) {
+      console.error('Error: WALLET_PRIVATE_KEY is required in .env file');
+      process.exit(1);
+    }
+    
+    console.log(`Using validation method: ${validationMethod}`);
+    console.log(`Using chain: ${chain}`);
+    
+    // Initialize ethers wallet
+    const provider = new ethers.JsonRpcProvider(rpcUrl || 'https://sepolia.infura.io/v3/');
+    const wallet = new ethers.Wallet(privateKey, provider);
+    const walletAddress = await wallet.getAddress();
+    
+    console.log(`Using wallet address: ${walletAddress}`);
+    console.log(`Using Lit Network: ${network}`);
+    
+    // Fetch the encrypted file
+    console.log(`Fetching encrypted file from: ${fileUrl}`);
+    const response = await axios.get(fileUrl);
+    const fileData = response.data;
+    
+    if (!fileData || !fileData.ciphertext || !fileData.dataToEncryptHash) {
+      console.error('Invalid file format or file not found');
+      console.log(fileData);
+      process.exit(1);
+    }
+    
+    const ciphertext = fileData.ciphertext;
+    const dataToEncryptHash = fileData.dataToEncryptHash;
+    
+    console.log('File fetched successfully. Initializing Lit client...');
+    
+    // Initialize Lit client
+    const litClient = new LitNodeClientNodeJs({
+      litNetwork: network,
+      debug: true
+    });
+    
+    await litClient.connect();
+    console.log('Connected to Lit Protocol');
+    
+    // Get auth signature
+    const domain = 'localhost';
+    const origin = 'https://localhost/login';
+    const statement = 'This is a test statement. You can put anything you want here.';
+    
+    const timestamp = new Date().toISOString();
+    const nonce = await litClient.getLatestBlockhash();
+    const expirationTime = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+    
+    // Use proper SIWE message format with expiration time
+    const messageToSign = `${domain} wants you to sign in with your Ethereum account:
+${walletAddress}
+
+${statement}
+
+URI: ${origin}
+Version: 1
+Chain ID: 1
+Nonce: ${nonce}
+Issued At: ${timestamp}
+Expiration Time: ${expirationTime}`;
+
+    // Sign with the wallet
+    const signedMessage = await wallet.signMessage(messageToSign);
+    
+    const authSig = {
+      sig: signedMessage,
+      derivedVia: 'web3.eth.personal.sign',
+      signedMessage: messageToSign,
+      address: walletAddress,
+    };
+    
+    console.log('Auth signature created');
+    console.log(`Using address: ${walletAddress} for authentication`);
+    
+    // Define contract conditions - since we're using a specific chain not directly supported by Lit
+    // let's create a simpler access condition
+    
+    // Try both approaches: contract conditions and basic auth
+    try {
+      // First approach: Using fixed contract conditions
+      let evmContractConditions = [
+        {
+          contractAddress: contractAddress,
+          functionName: validationMethod,
+          functionParams: [fileId, ":userAddress"],
+          functionAbi: {
+            inputs: [
+              {
+                name: "cid",
+                type: "string"
+              },
+              {
+                name: "requestor",
+                type: "address"
+              }
+            ],
+            name: validationMethod,
+            outputs: [
+              {
+                name: "",
+                type: "bool"
+              }
+            ],
+            stateMutability: "view",
+            type: "function"
+          },
+          chain: chain === 'quarkchain' ? 'ethereum' : chain, // Use 'ethereum' for quarkchain since it might not be supported directly
+          returnValueTest: {
+            key: "",
+            comparator: "=",
+            value: "true",
+          },
+        },
+      ];
+      
+      // Use standard access control conditions as fallback
+      const accessControlConditions = [
+        {
+          contractAddress: '',
+          standardContractType: '',
+          chain: chain === 'quarkchain' ? 'ethereum' : chain,
+          method: '',
+          parameters: [':userAddress'],
+          returnValueTest: {
+            comparator: '=',
+            value: walletAddress.toLowerCase(),
+          },
+        },
+      ];
+      
+      // Decrypt the file
+      console.log('Attempting to decrypt with Lit Protocol...');
+      
+      // First try with contract conditions
+      console.log('Trying with EVM contract conditions...');
+      console.log('Decrypt params:', JSON.stringify({
+        evmContractConditions,
+        chain: chain === 'quarkchain' ? 'ethereum' : chain,
+        ciphertext,
+        dataToEncryptHash,
+        authSig
+      }, null, 2));
+      
+      let decryptedString;
+      try {
+        decryptedString = await decryptToString(
+          {
+            evmContractConditions,
+            chain: chain === 'quarkchain' ? 'ethereum' : chain,
+            ciphertext,
+            dataToEncryptHash,
+            authSig
+          },
+          litClient
+        );
+      } catch (error) {
+        console.log('EVM contract conditions failed, trying with basic access control conditions...');
+        console.log('Decrypt params with ACC:', JSON.stringify({
+          accessControlConditions,
+          chain: chain === 'quarkchain' ? 'ethereum' : chain,
+          ciphertext,
+          dataToEncryptHash,
+          authSig
+        }, null, 2));
+        
+        decryptedString = await decryptToString(
+          {
+            accessControlConditions,
+            chain: chain === 'quarkchain' ? 'ethereum' : chain,
+            ciphertext,
+            dataToEncryptHash,
+            authSig
+          },
+          litClient
+        );
+      }
+      
+      console.log('Decryption successful');
+      
+      // Save the decrypted file
+      try {
+        // Try to parse as JSON for pretty formatting
+        const content = JSON.parse(decryptedString);
+        fs.writeFileSync(outputFilename, JSON.stringify(content, null, 2));
+      } catch (e) {
+        // If not valid JSON, save as plain text
+        fs.writeFileSync(outputFilename, decryptedString);
+      }
+      
+      console.log(`Decrypted file saved to: ${outputFilename}`);
+    } catch (error) {
+      console.error('Error decrypting file:', error);
+    }
+  } catch (error) {
+    console.error('Error:', error);
+  }
+}
+
+main().catch(console.error);
