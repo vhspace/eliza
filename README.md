@@ -1,3 +1,55 @@
+## Modifications for TrustDAI 
+
+Prototype decryption sample:
+```
+./start-with-decrypted.js -k <key> -i https://0xfbaf585140b7017a06a428c4f65fa227800eefd9.3337.w3link.io/0x6969eea2f225e64c0857d07a9a9752f57fb61d56-basicDetails -c mediaexpert
+```
+Usage:
+```
+./start-with-decrypted.js -k <key> -i <url-to-decrypt> -c <character>
+```
+Characters are statically defined in the js, but reference characters listed in `./characters/` 
+
+## Quick setup for TrustDAI on Linux
+```
+git pull https://github.com/vhspace/eliza
+cd eliza
+git switch develop
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
+nvm use 23.3.0
+nvm use default 23.3.0
+## you may need to reload your shell
+pnpm install
+pnpm build
+# make sure the trustdai-helper is started and running on port 3000 https://github.com/0xbala-k/TrustDAI-helper
+```
+ - Start a tmux or screen session, you'll need two processes, one to host the chatbot on 5371, and one that runs the llm.
+ - Make sure to configure an llm in the .env (copy from .env-sample).  There are some additional configs after this section you need to make
+ - Start the chatbot frontend: 
+`SERVER_PORT=3001 pnpm start:client`
+ - The default port is 3000, but since the TrustDAI-helper needs to run on port 3000, we'll need to use 3001. The chatbot won't connect otherwise and you'll have a empty chat window. 
+ - Start the eliza backend: 
+` NODE_OPTIONS="--max-old-space-size=8192" pnpm start  --characters="characters/mediaexpert.character.json"`
+ - NODE_OPTIONS is optional, but increasing the memory prevents eliza from crashing at startup due to errors in the characterfile or injected data from Lit -- misconfigurations cause the indexer to struggle with memory. 
+
+```
+WALLET_PRIVATE_KEY=<key>
+ETH_STORAGE_CONTRACT_ADDRESS=0x65a819551be75e1b0959411378a3b09e97b39a4f #ethstorage contract
+DATA_REGISTRY_CONTRACT=0x65a819551be75e1b0959411378a3b09e97b39a4f # eth contract
+HELPER_API_URL=http://localhost:3000 # where TrustDAI-helper runs
+CHAIN=sepolia
+LIT_NETWORK=datil-test
+OUTPUT_DIR=./decrypted-files
+RPC_URL=https://sepolia.infura.io/v3/<get this from metamask developer>
+# Setting to false to use real data
+USE_MOCK_DATA=false
+# Wallet credentials
+WALLET_ADDRESS=<wallet address>
+# Lit Protocol config
+LIT_NETWORK=datil
+CHAIN=sepolia
+```
+
 # Eliza 🤖
 
 <div align="center">
